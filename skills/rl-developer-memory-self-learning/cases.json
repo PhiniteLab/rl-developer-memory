@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "skill": "rl-developer-memory-self-learning",
+  "cases": [
+    {
+      "id": "rl_memory_positive_01",
+      "prompt": "PPO rollout testi hata verdi. Önce rl developer memory'de benzer pattern var mı bak, sonra sadece doğrulanmışsa yaz.",
+      "coverage_tags": ["positive", "failure", "memory"],
+      "expected_primary_skill": "rl-developer-memory-self-learning",
+      "expected_companion_skills": ["rl-developer-workflow"],
+      "disallowed_skills": [],
+      "expected_primary_agent": "validator",
+      "validation_depth": "standard",
+      "should_allow_implicit": true,
+      "rationale": "The prompt explicitly asks for retrieval-first handling of a real RL failure."
+    },
+    {
+      "id": "rl_memory_positive_02",
+      "prompt": "Bu theorem-to-code sync hatasını çözdük ve test ettik; reusable ise canonical fix olarak memory'ye yaz.",
+      "coverage_tags": ["positive", "writeback"],
+      "expected_primary_skill": "rl-developer-memory-self-learning",
+      "expected_companion_skills": [],
+      "disallowed_skills": [],
+      "expected_primary_agent": "validator",
+      "validation_depth": "standard",
+      "should_allow_implicit": true,
+      "rationale": "This is a post-validation decision about durable RL memory write-back."
+    },
+    {
+      "id": "rl_memory_negative_01",
+      "prompt": "SAC trainer klasör yapısını profesyonel hale getir.",
+      "coverage_tags": ["negative"],
+      "expected_primary_skill": "rl-developer-workflow",
+      "expected_companion_skills": [],
+      "disallowed_skills": ["rl-developer-memory-self-learning"],
+      "expected_primary_agent": "router",
+      "validation_depth": "deep",
+      "should_allow_implicit": true,
+      "rationale": "This is architecture work, not a failure-memory-first task."
+    }
+  ]
+}

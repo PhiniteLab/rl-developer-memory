@@ -35,6 +35,8 @@ Recommended posture:
 - use duplicate exit code `75`
 - leave global cap disabled by setting max instances to `0`
 
+Synthetic fallback does not replace the preferred posture. `RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY=1` is a compatibility and recovery valve for runtimes that cannot yet inject the main conversation key consistently; operators should still prefer explicit main-conversation ownership whenever possible.
+
 ## Ranking and safety settings
 
 - `RL_DEVELOPER_MEMORY_MATCH_ACCEPT_THRESHOLD`

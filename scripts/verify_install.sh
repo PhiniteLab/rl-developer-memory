@@ -91,7 +91,11 @@ grep -n 'RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES = "0"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR = "' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE = "75"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT = "1"' "$CODEX_HOME/config.toml"
-grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "1"' "$CODEX_HOME/config.toml"
+if grep -q 'RL_DEVELOPER_MEMORY_DOMAIN_MODE = "rl_control"' "$CODEX_HOME/config.toml"; then
+  grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "0"' "$CODEX_HOME/config.toml"
+else
+  grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "1"' "$CODEX_HOME/config.toml"
+fi
 
 echo "[verify] Checking calibration profile..."
 test -f "${RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH:-$RL_DEVELOPER_MEMORY_STATE_DIR/calibration_profile.json}"

@@ -40,6 +40,7 @@ Turn on RL support conservatively:
 rl-developer-memory-maint recommended-config --mode shadow --profile rl-control-shadow
 rl-developer-memory-maint doctor --mode shadow --profile rl-control-shadow
 rl-developer-memory-maint benchmark-rl-control-reporting
+python scripts/release_acceptance.py --json
 rl-developer-memory-maint rl-audit-health --window-days 30 --limit 10
 ```
 
@@ -63,6 +64,16 @@ Use active mode only when:
 - review backlog is manageable
 - your team accepts the stricter RL posture
 
+Automated validation can prove codebase readiness, but it should still default to **no-go** for active rollout until live shadow soak and review-backlog signoff are complete.
+
+Recommended evidence collection:
+```bash
+python scripts/release_acceptance.py --json
+python scripts/rl_quality_gate.py --json
+```
+
+The matrix uses a temporary Linux/WSL runtime root, keeps the DB path off `/mnt/c`, verifies reuse semantics, checks docs/CLI/MCP sync, and returns a conservative active rollout gate. By default it treats a pending review backlog above `10` items as non-manageable. The RL quality gate adds repository-structure, theory/code, and memory-hygiene acceptance checks on top.
+
 ## Registration helper examples
 
 Standard runtime registration:
@@ -84,3 +95,21 @@ python scripts/register_codex.py \
   --enable-rl-control \
   --rl-rollout-mode shadow
 ```
+
+RL active registration:
+```bash
+python scripts/register_codex.py \
+  --install-root ~/infra/rl-developer-memory \
+  --data-root ~/.local/share/rl-developer-memory \
+  --state-root ~/.local/state/rl-developer-memory \
+  --codex-home ~/.codex \
+  --enable-rl-control \
+  --rl-rollout-mode active
+```
+
+
+## Shadow versus active: practical interpretation
+
+- **Shadow**: use for default RL/control rollout, review-gated promotion, and conservative reporting/audit visibility.
+- **Active**: use only when shadow health is already proven and your team explicitly accepts stronger RL domain behavior.
+- A passing automated report means the codebase is ready for shadow operation; it does **not** automatically mean active rollout should be enabled.

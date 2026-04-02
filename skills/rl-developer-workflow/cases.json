@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "skill": "rl-developer-workflow",
+  "cases": [
+    {
+      "id": "rl_workflow_positive_01",
+      "prompt": "Bu repoda PPO ve SAC için ortak theorem-to-code, validation ve rollout discipline kur.",
+      "coverage_tags": ["positive", "rl", "architecture"],
+      "expected_primary_skill": "rl-developer-workflow",
+      "expected_companion_skills": ["core-repo-audit"],
+      "disallowed_skills": ["rl-developer-memory-self-learning"],
+      "expected_primary_agent": "router",
+      "validation_depth": "deep",
+      "should_allow_implicit": true,
+      "rationale": "The task is substantive RL architecture work, not failure-memory-only work."
+    },
+    {
+      "id": "rl_workflow_positive_02",
+      "prompt": "Actor-critic objective, Bellman residual, Lyapunov audit ve rollout safety arasında profesyonel bağ kur.",
+      "coverage_tags": ["positive", "theory", "control"],
+      "expected_primary_skill": "rl-developer-workflow",
+      "expected_companion_skills": [],
+      "disallowed_skills": [],
+      "expected_primary_agent": "router",
+      "validation_depth": "deep",
+      "should_allow_implicit": true,
+      "rationale": "The prompt requires theory-aware RL/control engineering guidance."
+    },
+    {
+      "id": "rl_workflow_negative_01",
+      "prompt": "RL hakkında kısa bir paragrafı daha akıcı yaz.",
+      "coverage_tags": ["negative"],
+      "expected_primary_skill": "",
+      "expected_companion_skills": [],
+      "disallowed_skills": ["rl-developer-workflow"],
+      "expected_primary_agent": "",
+      "validation_depth": "none",
+      "should_allow_implicit": false,
+      "rationale": "This is writing assistance, not technical RL workflow work."
+    }
+  ]
+}

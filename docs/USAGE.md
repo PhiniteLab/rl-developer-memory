@@ -12,6 +12,11 @@ Typical retrieval flow:
 3. record outcomes with `issue_feedback`
 4. store reusable fixes with `issue_record_resolution`
 
+For the RL/control workflow contract, see:
+- [MCP_RL_INTEGRATION_POLICY.md](MCP_RL_INTEGRATION_POLICY.md)
+- [MEMORY_SCOPE_OPERATIONS_NOTE.md](MEMORY_SCOPE_OPERATIONS_NOTE.md)
+- [RL_CODING_STANDARDS.md](RL_CODING_STANDARDS.md)
+
 ### Example: find a prior fix
 ```python
 issue_match(
@@ -74,8 +79,20 @@ Use compact, stable scopes:
 - broad reusable engineering issues → `global`
 - user-specific tuning → `user_scope`
 
+## Preference and session guidance
+
+- use `issue_set_preference` for stable user or team preferences
+- use `issue_list_preferences` to inspect active preference overlays
+- use `session_id` on `issue_match` and `issue_feedback` for within-session reranking memory
+- keep session reactions temporary; promote only verified reusable fixes with `issue_record_resolution`
+
 ## Expected next actions from `issue_match`
 
 - `match` → inspect the top result and try the suggested fix
 - `ambiguous` → compare the top one or two results and use `issue_guardrails`
 - `abstain` → continue fresh debugging and record only a verified reusable fix later
+
+## Skill installation/sync
+
+For portable global skill sync (`.codex` and `.agents`) see `docs/SKILL_INSTALL_SYNC.md`.
+Use `bash scripts/install_skill.sh --mode copy` as the default public-safe path.

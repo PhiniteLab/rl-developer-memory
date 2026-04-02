@@ -28,6 +28,7 @@
 | `src/rl_developer_memory/retrieval/` | candidate retrieval, features, ranker, and decision policy |
 | `src/rl_developer_memory/services/` | record, feedback, preferences, guardrails, session, and RL audit services |
 | `src/rl_developer_memory/domains/rl_control/` | RL/control taxonomy, validators, reporting, and promotion helpers |
+| `src/rl_developer_memory/{algorithms,agents,envs,networks,buffers,trainers,evaluation,experiments,theory,callbacks,utils}/` | config-driven RL development backbone (skeleton interfaces, theorem-to-code mappings, stabilization hooks, evaluation + checkpoint orchestration) |
 | `src/rl_developer_memory/benchmarks/` | diagnostics, calibration, and benchmark datasets |
 
 ## Data model

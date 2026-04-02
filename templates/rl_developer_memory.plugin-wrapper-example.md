@@ -1,15 +1,18 @@
 # rl-developer-memory Plugin Wrapper Examples
 
-## 1) Local plugin install (reference)
+## 1) Portable local plugin install (reference)
 
 ```bash
-mkdir -p ~/.codex/local-plugins
-cd ~/.codex/local-plugins
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+AGENTS_HOME="${AGENTS_HOME:-$HOME/.agents}"
 
-git clone https://github.com/<your-user-or-org>/rl-developer-memory.git rl-developer-memory
+git clone https://github.com/<your-user-or-org>/rl-developer-memory.git
+cd rl-developer-memory
+
+python scripts/install_skill.py --mode copy --codex-home "$CODEX_HOME" --agents-home "$AGENTS_HOME"
 
 # keep ~/.codex/config.toml as the MCP authority
-# restart Codex
+# restart Codex after MCP/runtime changes
 ```
 
 ## 2) `.mcp.json` remote/local templates

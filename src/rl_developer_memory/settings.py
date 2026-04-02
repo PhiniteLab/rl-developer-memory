@@ -74,6 +74,7 @@ class Settings:
     def from_env(cls) -> "Settings":
         home = Path(os.environ.get("RL_DEVELOPER_MEMORY_HOME", Path.home() / ".local" / "share" / "rl-developer-memory")).expanduser()
         db_path = Path(os.environ.get("RL_DEVELOPER_MEMORY_DB_PATH", home / "rl_developer_memory.sqlite3")).expanduser()
+        _validate_local_linux_db_path(db_path)
         state_dir = Path(os.environ.get("RL_DEVELOPER_MEMORY_STATE_DIR", Path.home() / ".local" / "state" / "rl-developer-memory")).expanduser()
         backup_dir = Path(os.environ.get("RL_DEVELOPER_MEMORY_BACKUP_DIR", home / "backups")).expanduser()
         log_dir = Path(os.environ.get("RL_DEVELOPER_MEMORY_LOG_DIR", state_dir / "log")).expanduser()
@@ -476,3 +477,14 @@ def _normalize_domain_mode(raw_value: str) -> str:
     }
     normalized = aliases.get(normalized, normalized)
     return normalized if normalized in _ALLOWED_DOMAIN_MODES else "generic"
+
+
+def _validate_local_linux_db_path(db_path: Path) -> None:
+    """Reject live SQLite paths under /mnt/c so the active DB stays on Linux/WSL storage."""
+
+    normalized = db_path.expanduser().as_posix().rstrip("/")
+    if normalized == "/mnt/c" or normalized.startswith("/mnt/c/"):
+        raise ValueError(
+            "RL_DEVELOPER_MEMORY_DB_PATH must stay on the local Linux/WSL filesystem; "
+            "do not place the active SQLite database under /mnt/c."
+        )

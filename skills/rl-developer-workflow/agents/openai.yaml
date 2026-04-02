@@ -1,0 +1,10 @@
+interface:
+  display_name: "RL Developer Workflow"
+  short_description: "Selective expert workflow for RL/control engineering, theorem-to-code alignment, validation, rollout posture, and MCP-aware delivery."
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "rl_developer_memory"
+      description: "RL-aware MCP surface for failure memory, guardrails, preferences, and verified write-back when justified."

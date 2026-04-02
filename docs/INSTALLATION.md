@@ -15,6 +15,7 @@ This guide covers the supported installation paths for `rl-developer-memory`.
 git clone https://github.com/<your-user-or-org>/rl-developer-memory.git
 cd rl-developer-memory
 bash install.sh
+bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
 
@@ -48,8 +49,25 @@ bash scripts/verify_install.sh
 Example RL shadow install:
 ```bash
 ENABLE_RL_CONTROL=1 RL_ROLLOUT_MODE=shadow bash install.sh
+bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
+
+## Skill install/sync to global surfaces
+
+Use the skill installer after runtime install to expose canonical skill content to global discovery surfaces.
+This does not replace runtime authority; `~/.codex/config.toml` remains authoritative.
+
+```bash
+bash scripts/install_skill.sh --mode copy
+```
+
+- `--mode copy` (default): public-share friendly and robust
+- `--mode symlink`: local-dev convenience
+- `--mode generated`: smaller generated discovery bundle
+- `--dry-run --json`: inspect resolved targets without writing
+
+See `docs/SKILL_INSTALL_SYNC.md` for details.
 
 ## Manual development install
 
@@ -69,6 +87,8 @@ rl-developer-memory-maint smoke
 rl-developer-memory-maint doctor --mode shadow --max-instances 0
 rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
+python scripts/release_acceptance.py --json
+python scripts/rl_quality_gate.py --json
 ```
 
 ## Verification script
@@ -83,3 +103,10 @@ rl-developer-memory-maint e2e-mcp-reuse-harness --json
 - backup availability
 - AGENTS snippet presence
 - end-to-end reuse harness when the MCP runtime is importable
+
+## RL rollout registration semantics
+
+- `--enable-rl-control --rl-rollout-mode shadow` keeps the RL domain in a conservative shadow posture.
+- `--enable-rl-control --rl-rollout-mode active` writes the stricter active domain mode.
+- In both cases, the preferred owner-key env remains `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY`.
+- Verification should still start from shadow-oriented doctor checks unless live active signoff is explicitly intended.

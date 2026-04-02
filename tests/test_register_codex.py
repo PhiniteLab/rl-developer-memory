@@ -83,6 +83,7 @@ class RegisterCodexTests(unittest.TestCase):
             self.assertIn('RL_DEVELOPER_MEMORY_DOMAIN_MODE = "rl_control"', config_text)
             self.assertIn('RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT = "1"', config_text)
             self.assertIn('RL_DEVELOPER_MEMORY_ENABLE_EXPERIMENT_AUDIT = "1"', config_text)
+            self.assertIn('RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "0"', config_text)
             self.assertIn('RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"', config_text)
 
 

@@ -316,6 +316,13 @@ def cmd_doctor(mode: str, max_instances: int, codex_home: str | None, profile: s
         settings.rl_developer_memory_home.exists() and settings.state_dir.exists() and settings.backup_dir.exists(),
         f'home={settings.rl_developer_memory_home}, state={settings.state_dir}, backup={settings.backup_dir}',
     ))
+    configured_db_path = str(env.get("RL_DEVELOPER_MEMORY_DB_PATH", settings.db_path))
+    configured_db_posix = Path(configured_db_path).expanduser().as_posix().rstrip("/")
+    checks.append(_check(
+        "db-path-local-linux",
+        not (configured_db_posix == "/mnt/c" or configured_db_posix.startswith("/mnt/c/")),
+        f"path={configured_db_path!r}",
+    ))
     checks.append(_check(
         "calibration-profile",
         settings.calibration_profile_path.exists(),

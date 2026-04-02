@@ -42,8 +42,10 @@ def main() -> None:
     config_text = config_path.read_text(encoding="utf-8")
 
     rl_env_lines = ""
+    shadow_mode_flag = "1"
     if args.enable_rl_control:
         domain_mode = "hybrid" if args.rl_rollout_mode == "shadow" else "rl_control"
+        shadow_mode_flag = "1" if args.rl_rollout_mode == "shadow" else "0"
         rl_env_lines = f"""RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL = "1"
 RL_DEVELOPER_MEMORY_DOMAIN_MODE = "{domain_mode}"
 RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT = "1"
@@ -79,7 +81,7 @@ RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"
 RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE = "0"
 RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES = "0"
 RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT = "1"
-RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "1"
+RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "{shadow_mode_flag}"
 RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES = "1"
 RL_DEVELOPER_MEMORY_ENABLE_REDACTION = "1"
 RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE = "1"

@@ -1,10 +1,10 @@
 interface:
   display_name: "RL Developer Memory"
-  short_description: "Retrieve known fixes and write back verified recurring solutions."
+  short_description: "Selective RL/control failure-memory companion for retrieval, guardrails, feedback, and verified durable write-back."
 policy:
   allow_implicit_invocation: true
 dependencies:
   tools:
     - type: "mcp"
       value: "rl_developer_memory"
-      description: "Local RL developer memory MCP server"
+      description: "RL-aware MCP surface for compact retrieval, guardrails, preference overlays, and verified write-back."

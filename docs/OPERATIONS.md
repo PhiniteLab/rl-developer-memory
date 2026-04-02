@@ -10,6 +10,8 @@ rl-developer-memory-maint smoke-learning
 rl-developer-memory-maint doctor --mode shadow --max-instances 0
 rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
+python scripts/release_acceptance.py --json
+python scripts/rl_quality_gate.py --json
 ```
 
 ## What these commands tell you
@@ -79,7 +81,7 @@ Useful things to watch:
 
 ```bash
 rl-developer-memory-maint review-queue --status pending --limit 20
-rl-developer-memory-maint resolve-review 17 accept --note "confirmed"
+rl-developer-memory-maint resolve-review 17 approve --note "confirmed"
 ```
 
 ## Retention and cleanup
@@ -111,3 +113,10 @@ bash ~/infra/rl-developer-memory/scripts/install_cron.sh
 ```
 
 If your environment cannot support cron immediately, use `SKIP_CRON_INSTALL=1` during install and configure scheduling later.
+
+
+## Memory operations policy
+
+For scope and write-back hygiene, use:
+- `docs/MCP_RL_INTEGRATION_POLICY.md`
+- `docs/MEMORY_SCOPE_OPERATIONS_NOTE.md`

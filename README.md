@@ -8,7 +8,7 @@ It ships three things together:
 
 1. a Python MCP server exposed as `rl_developer_memory`
 2. a maintenance CLI named `rl-developer-memory-maint`
-3. an installation and verification workflow for Codex-centered local deployments
+3. an installation, verification, and portable skill-sync workflow for Codex-centered local deployments
 
 ## What the project does
 
@@ -99,6 +99,7 @@ The maintenance CLI is the operational control plane for local installs.
 git clone https://github.com/<your-user-or-org>/rl-developer-memory.git
 cd rl-developer-memory
 bash install.sh
+bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
 
@@ -108,6 +109,7 @@ That flow:
 - writes a calibration profile
 - creates an initial backup
 - registers the live MCP block in `~/.codex/config.toml`
+- syncs the canonical skill/plugin bundle into global `.codex` and `.agents` discovery surfaces
 - verifies smoke, doctor, config, backup, calibration, and reuse behavior
 
 ### Recommended first checks
@@ -116,6 +118,7 @@ rl-developer-memory-maint smoke
 rl-developer-memory-maint doctor --mode shadow --max-instances 0
 rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
+python scripts/release_acceptance.py --json
 ```
 
 ## Install modes
@@ -134,8 +137,22 @@ Important installer toggles:
 Example RL shadow install:
 ```bash
 ENABLE_RL_CONTROL=1 RL_ROLLOUT_MODE=shadow bash install.sh
+bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
+
+### Global skill sync
+
+The repository is the **canonical source** for the RL skill bundle. After checkout or install, sync the
+bundle into global discovery surfaces with:
+
+```bash
+python scripts/install_skill.py --dry-run --json
+python scripts/install_skill.py --mode copy
+```
+
+Copy mode is the default and most public-share friendly option. For details, see
+[docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md).
 
 ### Mode B — Manual / source-checkout workflow
 ```bash
@@ -164,6 +181,8 @@ Recommended rollout order:
 5. inspect `rl-audit-health`
 6. only then consider an active RL rollout
 
+Even after the automated matrix passes, keep the default active decision at **no-go** until live shadow soak and review-backlog signoff are complete.
+
 ## Live runtime rules
 
 - keep exactly one live `[mcp_servers.rl_developer_memory]` block in `~/.codex/config.toml`
@@ -185,6 +204,13 @@ python -m build
 
 The repository also ships a CI workflow that runs these core gates automatically on push and pull request.
 
+For the full rollout/orchestration gate, run:
+```bash
+python scripts/release_acceptance.py --json
+```
+
+That matrix bootstraps a temporary Linux/WSL-safe runtime, verifies shadow doctor + RL shadow doctor + MCP reuse harness + RL reporting benchmark, checks docs/CLI/MCP sync, and emits a conservative **active rollout go/no-go** decision.
+
 ## Documentation map
 
 - [docs/README.md](docs/README.md) — documentation index
@@ -193,11 +219,19 @@ The repository also ships a CI workflow that runs these core gates automatically
 - [docs/OPERATIONS.md](docs/OPERATIONS.md) — health, backup, restore, and lifecycle operations
 - [docs/ROLLOUT.md](docs/ROLLOUT.md) — shadow/active rollout guidance
 - [docs/USAGE.md](docs/USAGE.md) — MCP and Python usage patterns
+- [docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md) — portable global skill sync for `.codex` and `.agents` surfaces
+- [docs/MCP_RL_INTEGRATION_POLICY.md](docs/MCP_RL_INTEGRATION_POLICY.md) — RL lifecycle contract for MCP decision, scope, preference, feedback, and write-back
+- [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) — short scope and verified write-back operations note
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — runtime/data-flow overview
+- [docs/RL_BACKBONE.md](docs/RL_BACKBONE.md) — RL development backbone folders and contracts
+- [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) — RL coding, validation, and delivery standards
+- [docs/theory_to_code.md](docs/theory_to_code.md) — theorem/assumption/objective mappings to code
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — contributor workflow
+- [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) — minimum professional RL acceptance gate
 - [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) — supported environments
 - [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — dependency posture
 - [docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md](docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md) — owner-key model
+- [docs/CODEX_RL_AGENT_OPERATING_MODEL.md](docs/CODEX_RL_AGENT_OPERATING_MODEL.md) — agent-oriented RL orchestration contract for Codex
 - [docs/ORCHESTRATION_STDLIO_REUSE_CHECKLIST.md](docs/ORCHESTRATION_STDLIO_REUSE_CHECKLIST.md) — reuse validation checklist
 
 ## Contributing and support
