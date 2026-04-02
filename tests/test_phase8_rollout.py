@@ -4,11 +4,11 @@ import contextlib
 import io
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 from rl_developer_memory.backup import BackupManager
 from rl_developer_memory.maintenance import cmd_doctor, cmd_recommended_config
@@ -93,6 +93,7 @@ class Phase8RolloutTests(unittest.TestCase):
         self.assertTrue(payload["env"]["RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR"].endswith("/state/run"))
         self.assertEqual(payload["env"]["RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE"], "75")
         self.assertEqual(payload["env"]["RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY_ENV"], "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY")
+        self.assertEqual(payload["env"]["RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY"], "1")
 
     def test_doctor_passes_for_registered_shadow_rollout(self) -> None:
         self._register_codex()
@@ -135,6 +136,7 @@ class Phase8RolloutTests(unittest.TestCase):
         self.assertIn('RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE = "75"', config_text)
         self.assertIn('RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY = "1"', config_text)
         self.assertIn('RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY_ENV = "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY"', config_text)
+        self.assertIn('RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"', config_text)
 
     def test_maintenance_cli_runs_e2e_mcp_reuse_harness(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]

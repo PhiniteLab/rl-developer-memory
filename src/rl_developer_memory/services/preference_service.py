@@ -5,7 +5,6 @@ from typing import Any
 from ..normalization import build_query_profile, derive_strategy_key, infer_strategy_hints, tokenize
 from ..storage import RLDeveloperMemoryStore
 
-
 _STRATEGY_FAMILY_HINTS = {
     "resolve_from___file__": "path_resolution_error",
     "discover_repo_root": "path_resolution_error",

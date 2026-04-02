@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections import Counter
 import re
+from collections import Counter
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, Callable
 
 from ...models import QueryProfile
 from .contracts import RLAuditFinding, coerce_json_value
@@ -25,7 +25,6 @@ from .validators import (
     validate_theory_consistency,
     validate_validation_payload,
 )
-
 
 _ALGORITHM_KEYWORDS: dict[str, tuple[str, ...]] = {
     "sac": ("sac", "soft actor critic", "soft-actor-critic"),
@@ -301,7 +300,7 @@ def _category_match(
     reasons: list[str],
     findings: list[RLAuditFinding],
     blank_values: set[str] | None = None,
-    groups: callable | None = None,
+    groups: Callable[[str], str] | None = None,
     partial_pairs: set[tuple[str, str]] | None = None,
     missing_severity: str = "warning",
     mismatch_penalty: float = 0.30,

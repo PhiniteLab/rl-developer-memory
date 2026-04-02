@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from hashlib import blake2b
 import math
 import struct
+from hashlib import blake2b
 from typing import Any
 
 from ..domains.rl_control import infer_query_domain_profile

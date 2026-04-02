@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import os
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from rl_developer_memory.app import RLDeveloperMemoryApp
-from rl_developer_memory.benchmarks import run_hard_negative_benchmark, run_merge_correctness_stress, seed_hard_negative_memory
+from rl_developer_memory.benchmarks import (
+    run_hard_negative_benchmark,
+    run_merge_correctness_stress,
+    seed_hard_negative_memory,
+)
 
 
 class Phase6BenchmarksTests(unittest.TestCase):

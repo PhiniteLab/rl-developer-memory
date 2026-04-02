@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Iterable
 
-
 DOMAIN_MODES = {"generic", "hybrid", "rl_control"}
 
 MEMORY_KINDS = {

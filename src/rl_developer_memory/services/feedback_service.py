@@ -5,7 +5,6 @@ from typing import Any
 from ..storage import RLDeveloperMemoryStore
 from .session_service import SessionService
 
-
 DEFAULT_REWARDS: dict[str, float] = {
     "candidate_accepted": 0.35,
     "candidate_rejected": -0.60,

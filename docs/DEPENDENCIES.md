@@ -1,82 +1,29 @@
 # Dependencies
 
-This page separates system-level prerequisites from Python-level package dependencies so users can install the repository with fewer surprises.
+## Required runtime dependency
 
-## Python package dependencies
+The project has a deliberately small runtime dependency surface.
 
-Confirmed from `pyproject.toml` and `requirements.txt`:
-
-### Runtime
-
+Required package dependency:
 - `mcp[cli]>=1.0.0,<2.0.0`
 
-### Development
+## Development dependencies
 
-- `pytest>=8.0.0`
+Installed through `.[dev]`:
+- `pytest`
+- `pyright`
+- `ruff`
 
-Install the development environment from a checkout with:
+## Optional environment dependencies
 
-```bash
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install -e .[dev]
-```
+Depending on workflow, you may also need:
+- `crontab` support for scheduled backups
+- standard Linux/WSL shell tooling
+- Codex for live MCP registration and use
 
-## Python standard-library dependencies
+## Dependency posture
 
-No extra pip package is required for SQLite itself.
-
-The code uses Python's built-in standard library modules for:
-
-- `sqlite3`
-- `argparse`
-- `pathlib`
-- `tempfile`
-- `json`
-- `hashlib`
-- `shutil`
-
-## Required system dependencies
-
-For the documented install path, users should have:
-
-- `git`
-- `bash`
-- `python3`
-- `python3-venv`
-- `python3-pip`
-
-## Optional system dependencies
-
-These are not strictly required for the core server, but they improve the experience:
-
-- `rsync`
-  - used by `install.sh` when available for cleaner install-root syncs
-- `cron` or `crontab`
-  - needed only for scheduled backups
-- `sqlite3`
-  - useful only for manual database inspection from the terminal
-- `sudo`
-  - only relevant if you want the cron helper to try enabling or starting the cron service
-
-## Recommended Ubuntu or WSL package install
-
-For Ubuntu-based Linux or WSL environments:
-
-```bash
-sudo apt update
-sudo apt install -y git bash python3 python3-venv python3-pip
-```
-
-Optional extras:
-
-```bash
-sudo apt install -y rsync cron sqlite3
-```
-
-## Dependency notes
-
-- The installer creates its own virtual environment and installs Python packages there.
-- The runtime dependency surface is intentionally small.
-- The install contract is broader than `requirements.txt` alone because the repository also relies on shell tooling and a Linux or WSL-style environment.
+Project goals:
+- keep runtime dependencies minimal
+- avoid turning the package into a large framework bundle
+- prefer local scripts and explicit operational surfaces over hidden services

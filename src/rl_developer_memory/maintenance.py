@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timedelta, timezone
 import json
 import os
 import re
-from pathlib import Path
 import tempfile
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any, Callable
 
 try:
@@ -33,13 +33,16 @@ from .benchmarks import (
 )
 from .e2e_mcp_reuse_harness import (
     harness_succeeded as e2e_mcp_reuse_harness_succeeded,
+)
+from .e2e_mcp_reuse_harness import (
     render_human as render_e2e_mcp_reuse_harness,
+)
+from .e2e_mcp_reuse_harness import (
     run_harness as run_e2e_mcp_reuse_harness,
 )
 from .lifecycle import read_server_lifecycle_status
 from .settings import Settings
 from .storage import RLDeveloperMemoryStore
-
 
 _ENV_KEYS = (
     "RL_DEVELOPER_MEMORY_HOME",
@@ -154,6 +157,7 @@ def _recommended_env(*, settings: Settings, mode: str, max_instances: int, profi
         "RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE": str(settings.server_duplicate_exit_code),
         "RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY": "1" if resolved_max is None else "0",
         "RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY_ENV": "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY",
+        "RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY": "1" if resolved_max is None else "0",
         "RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE": "0" if resolved_max is None or resolved_max > 1 else "1",
         "RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES": "0" if resolved_max is None else str(resolved_max),
         "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT": "1",

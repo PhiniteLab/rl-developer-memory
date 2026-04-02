@@ -7,8 +7,8 @@ from .services import (
     FeedbackService,
     GuardrailService,
     PreferenceService,
-    RLAuditReportingService,
     RecordResolutionService,
+    RLAuditReportingService,
     RLReadOnlyAuditService,
     SessionService,
 )

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 
 class RegisterCodexTests(unittest.TestCase):
@@ -54,6 +54,7 @@ class RegisterCodexTests(unittest.TestCase):
             )
             config_text = (base / ".codex" / "config.toml").read_text(encoding="utf-8")
             self.assertNotIn('RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL = "1"', config_text)
+            self.assertIn('RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"', config_text)
 
     def test_register_codex_can_write_rl_active_flags(self) -> None:
         with tempfile.TemporaryDirectory(prefix="register-codex-rl-") as temp_dir:
@@ -82,6 +83,7 @@ class RegisterCodexTests(unittest.TestCase):
             self.assertIn('RL_DEVELOPER_MEMORY_DOMAIN_MODE = "rl_control"', config_text)
             self.assertIn('RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT = "1"', config_text)
             self.assertIn('RL_DEVELOPER_MEMORY_ENABLE_EXPERIMENT_AUDIT = "1"', config_text)
+            self.assertIn('RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"', config_text)
 
 
 if __name__ == "__main__":

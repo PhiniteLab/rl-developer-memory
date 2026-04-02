@@ -1,65 +1,34 @@
 # Compatibility
 
-This repository is intentionally designed around Linux-style local tooling and filesystem layouts.
+## Supported environments
 
-## Support matrix
+Officially documented environments:
+- Linux
+- WSL 2
 
-| Environment | Status | Notes |
-| --- | --- | --- |
-| Linux | Supported | Primary target for the installer, runtime paths, and backup flow. |
-| WSL 2 | Supported | Explicitly supported and appropriate for this repository's Linux-oriented install flow. |
-| Windows without WSL | Not supported | The current installer and path conventions assume `bash`, Linux-style paths, and a Python virtualenv layout under a POSIX shell. |
-| macOS | Unverified | It may be possible with manual adjustments, but this repository does not currently document or promise it. |
+## Python support
 
-## Tested-environment note
+The package requires:
+- Python 3.10+
 
-The maintainer reports that this project runs on their local machine and on WSL. The repository itself is also structured around that reality:
+CI currently targets Python 3.12 for the main quality workflow, while package metadata includes 3.10 through 3.12.
 
-- `install.sh` assumes a bash-based environment
-- default paths use Linux home-directory conventions
-- backup guidance recommends keeping the live SQLite database inside Linux or WSL storage
+## Filesystem guidance
 
-## WSL guidance
+Recommended:
+- keep the active SQLite database on the local Linux or WSL filesystem
+- use mirrored backup targets for copies only
 
-If you are using WSL, the recommended setup is:
+Avoid:
+- placing the active DB under `/mnt/c/...`
+- treating cloud-sync folders as the live SQLite path
 
-- keep the repository checkout inside the Linux filesystem
-- keep the live SQLite database under `~/.local/share/rl-developer-memory`
-- use `/mnt/c/...` only for mirrored backups, not for the active database
+## Native Windows
 
-This project is a good fit for WSL because:
+Native Windows without WSL is not the documented target.
+Some lifecycle and operational assumptions are Linux/WSL-oriented.
 
-- the installer is bash-first
-- the runtime paths are POSIX-friendly
-- Codex and MCP workflows often behave more predictably in a Linux-like shell environment
+## Cron and service tooling
 
-## WSL and cron
-
-Scheduled backups rely on `crontab`. On WSL, that usually means:
-
-- installing cron explicitly
-- optionally enabling `systemd` if your WSL setup needs it for service management
-
-The example [wsl.conf template](../templates/wsl.conf.example) is included for this reason.
-
-If you do not want scheduled backups yet, install with:
-
-```bash
-SKIP_CRON_INSTALL=1 bash install.sh
-```
-
-You can still run manual backups later with:
-
-```bash
-rl-developer-memory-maint backup
-```
-
-## Non-goals
-
-This repository does not currently try to be:
-
-- a native Windows desktop installer
-- a cross-platform GUI application
-- a cloud-hosted memory service
-
-It is a local-first Linux and WSL developer tool.
+The backup helper and some operational examples assume standard Linux/WSL shell tooling.
+If your environment does not support cron or `systemctl`, use `SKIP_CRON_INSTALL=1` and configure scheduling manually.

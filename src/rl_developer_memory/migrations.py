@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+import re
+import sqlite3
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from importlib import resources
-import re
-import sqlite3
 from typing import Any
 
 MIGRATION_NAME_RE = re.compile(r"^(?P<version>\d{3})_(?P<name>[a-z0-9_]+)\.sql$", re.IGNORECASE)

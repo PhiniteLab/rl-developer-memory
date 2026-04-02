@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pytest
 
-
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "scripts" / "e2e_mcp_reuse_harness.py"
 

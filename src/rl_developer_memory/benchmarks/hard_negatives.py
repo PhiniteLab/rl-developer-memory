@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import statistics
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from .dense_bandit import seed_dense_bandit_memory

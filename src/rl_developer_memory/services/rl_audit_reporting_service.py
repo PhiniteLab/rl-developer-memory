@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..domains.rl_control import build_pattern_audit_report, build_review_item_audit_report, summarize_review_queue_reports
+from ..domains.rl_control import (
+    build_pattern_audit_report,
+    build_review_item_audit_report,
+    summarize_review_queue_reports,
+)
 from ..models import PatternBundle
 from ..storage import RLDeveloperMemoryStore
 

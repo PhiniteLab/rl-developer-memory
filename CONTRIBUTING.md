@@ -1,21 +1,18 @@
 # Contributing
 
-Thanks for considering a contribution to `rl-developer-memory`.
+Thanks for contributing to `rl-developer-memory`.
 
-This repository is a local-first Python MCP tool backed by SQLite. The most useful contributions are the ones that improve correctness, clarity, install reliability, and long-term maintainability without inflating the project.
+This project is a local-first Python MCP service. Good contributions improve **correctness, install reliability, retrieval quality, rollout safety, and documentation clarity** without bloating the dependency or runtime surface.
 
-## Good contribution areas
+## Before you start
 
-- matching and ranking improvements
-- duplicate-control or merge heuristics
-- better install and verification reliability
-- WSL and Linux documentation improvements
-- tests for recurring engineering failure patterns
-- backup, restore, and operational hardening
+Read these first:
+- [README.md](README.md)
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/OPERATIONS.md](docs/OPERATIONS.md)
 
-## Development setup
-
-Clone the repository and create a local development environment:
+## Local setup
 
 ```bash
 python3 -m venv .venv
@@ -24,70 +21,72 @@ python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e .[dev]
 ```
 
-If you are missing Linux or WSL packages, check [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+## What makes a strong contribution
 
-## Before opening a PR
+- scoped, reviewable changes
+- validation evidence
+- explicit treatment of runtime/config side effects
+- no surprise behavior in backup, migration, lifecycle, or rollout paths
+- documentation kept in sync with code
 
-Please keep changes aligned with the current project goals:
+## Validation expectations
 
-- local-first
-- Linux and WSL friendly
-- small dependency surface
-- explicit install and verification flow
-- reusable issue patterns instead of noisy logs
-
-Run the relevant validation before submitting:
+For most code changes, run:
 
 ```bash
-.venv/bin/python -m pytest
-.venv/bin/python -m rl_developer_memory.maintenance smoke
+ruff check .
+pyright
+python -m pytest
+python -m rl_developer_memory.maintenance smoke
+python -m build
 ```
 
-If you changed installer behavior, also run a temp-directory install and then run the installed verification script from the resulting install root, for example:
+Add these when relevant:
 
 ```bash
-bash /path/to/install/scripts/verify_install.sh
+python -m rl_developer_memory.maintenance smoke-learning
+python -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0
+python -m rl_developer_memory.maintenance doctor --mode shadow --profile rl-control-shadow
+python -m rl_developer_memory.maintenance e2e-mcp-reuse-harness --json
+python -m rl_developer_memory.maintenance benchmark-rl-control-reporting
 ```
 
-## PR guidance
+## Install / registration changes
 
-Good pull requests are:
+If you change install, verification, Codex registration, calibration, or backup logic, also validate:
 
-- scoped narrowly
-- honest about tradeoffs
-- backed by validation
-- careful about filesystem paths and SQLite behavior
-- careful not to break Linux or WSL assumptions without updating docs
+```bash
+bash install.sh
+bash scripts/verify_install.sh
+```
 
-Please include:
+Recommended RL shadow install check:
 
+```bash
+ENABLE_RL_CONTROL=1 RL_ROLLOUT_MODE=shadow bash install.sh
+bash scripts/verify_install.sh
+```
+
+## Documentation changes
+
+If you touch README or docs:
+- update the docs index in `docs/README.md`
+- keep command names in sync with `maintenance.py`
+- keep MCP tool names in sync with `server.py`
+- keep install steps in sync with `install.sh`, `register_codex.py`, and `verify_install.sh`
+
+## PR checklist
+
+Include:
 - what changed
 - why it changed
 - how you validated it
-- any remaining risks or follow-up work
+- any residual risks or follow-up work
 
-## Documentation contributions
+## Areas where extra care matters
 
-Docs improvements are welcome, especially when they:
-
-- reduce setup ambiguity
-- separate required dependencies from optional ones
-- clarify WSL behavior
-- make install, smoke, and verification steps more reproducible
-
-## RL Developer Memory quality bar
-
-This repository is not trying to store every past mistake. It is trying to store reusable, verified engineering patterns.
-
-When proposing logic changes, prefer:
-
-- normalized summaries
-- stable error-family labels
-- stable root-cause labels
-- compact prevention rules
-
-And avoid:
-
-- raw transcript dumping
-- speculative write-back
-- one-off typo memorization
+- SQLite schema and migrations
+- lifecycle locking and owner-key behavior
+- rollout flags and RL-control promotion semantics
+- backup/restore safety
+- docs that can mislead install or live operations

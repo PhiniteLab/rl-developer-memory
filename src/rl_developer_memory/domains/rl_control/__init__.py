@@ -1,5 +1,28 @@
-from .contracts import ArtifactRef, MetricsPayload, ProblemProfile, RLAuditFinding, RunManifest, ValidationPayload, coerce_json_value
+from .contracts import (
+    ArtifactRef,
+    MetricsPayload,
+    ProblemProfile,
+    RLAuditFinding,
+    RunManifest,
+    ValidationPayload,
+    coerce_json_value,
+)
 from .promotion import PromotionDecision, decide_promotion, recommend_validation_tier
+from .read_only_audit import (
+    build_candidate_read_only_audit,
+    build_domain_compatibility,
+    extract_candidate_domain_profile,
+    infer_query_domain_profile,
+)
+from .reporting import (
+    build_pattern_audit_report,
+    build_review_item_audit_report,
+    summarize_artifact_refs,
+    summarize_audit_findings,
+    summarize_promotion_state,
+    summarize_read_only_audit,
+    summarize_review_queue_reports,
+)
 from .strategy_keys import RL_CONTROL_STRATEGY_KEYS
 from .taxonomy import (
     ALGORITHM_FAMILIES,
@@ -22,21 +45,6 @@ from .taxonomy import (
     normalize_sim2real_stage,
     normalize_theorem_claim_type,
     normalize_validation_tier,
-)
-from .reporting import (
-    build_pattern_audit_report,
-    build_review_item_audit_report,
-    summarize_audit_findings,
-    summarize_artifact_refs,
-    summarize_promotion_state,
-    summarize_read_only_audit,
-    summarize_review_queue_reports,
-)
-from .read_only_audit import (
-    build_candidate_read_only_audit,
-    build_domain_compatibility,
-    extract_candidate_domain_profile,
-    infer_query_domain_profile,
 )
 from .validators import (
     validate_artifact_refs,

@@ -3,7 +3,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-from ..domains.rl_control import build_domain_compatibility, extract_candidate_domain_profile, infer_query_domain_profile
+from ..domains.rl_control import (
+    build_domain_compatibility,
+    extract_candidate_domain_profile,
+    infer_query_domain_profile,
+)
 from ..models import QueryProfile
 from ..normalization import compare_entity_slots, tokenize
 

@@ -13,6 +13,9 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 SKIP_DEP_INSTALL="${SKIP_DEP_INSTALL:-0}"
 SKIP_CRON_INSTALL="${SKIP_CRON_INSTALL:-0}"
 VENV_SYSTEM_SITE_PACKAGES="${VENV_SYSTEM_SITE_PACKAGES:-0}"
+ENABLE_RL_CONTROL="${ENABLE_RL_CONTROL:-0}"
+RL_ROLLOUT_MODE="${RL_ROLLOUT_MODE:-shadow}"
+REQUIRE_CRON_INSTALL="${REQUIRE_CRON_INSTALL:-0}"
 
 echo "[1/7] Creating directory layout..."
 mkdir -p "$INSTALL_ROOT" "$DATA_ROOT" "$STATE_ROOT" "$BACKUP_ROOT" "$CODEX_HOME"
@@ -74,18 +77,35 @@ echo "[5/7] Initializing database..."
 source "$INSTALL_ROOT/config/install.env"
 "$INSTALL_ROOT/.venv/bin/python" -m rl_developer_memory.maintenance init-db
 
+echo "[5a/7] Writing calibration profile..."
+"$INSTALL_ROOT/.venv/bin/python" -m rl_developer_memory.maintenance calibrate-thresholds --write-profile >/dev/null
+
+echo "[5b/7] Creating initial safety backup..."
+"$INSTALL_ROOT/.venv/bin/python" -m rl_developer_memory.maintenance backup >/dev/null
+
 echo "[6/7] Updating Codex config and global instructions..."
-"$INSTALL_ROOT/.venv/bin/python" "$INSTALL_ROOT/scripts/register_codex.py" \
-  --install-root "$INSTALL_ROOT" \
-  --data-root "$DATA_ROOT" \
-  --state-root "$STATE_ROOT" \
+REGISTER_ARGS=(
+  --install-root "$INSTALL_ROOT"
+  --data-root "$DATA_ROOT"
+  --state-root "$STATE_ROOT"
   --codex-home "$CODEX_HOME"
+)
+if [[ "$ENABLE_RL_CONTROL" == "1" ]]; then
+  REGISTER_ARGS+=(--enable-rl-control --rl-rollout-mode "$RL_ROLLOUT_MODE")
+fi
+"$INSTALL_ROOT/.venv/bin/python" "$INSTALL_ROOT/scripts/register_codex.py" "${REGISTER_ARGS[@]}"
 
 echo "[7/7] Installing cron backup..."
 if [[ "$SKIP_CRON_INSTALL" == "1" ]]; then
   echo "Skipping cron installation because SKIP_CRON_INSTALL=1"
 else
-  bash "$INSTALL_ROOT/scripts/install_cron.sh" || true
+  if ! bash "$INSTALL_ROOT/scripts/install_cron.sh"; then
+    if [[ "$REQUIRE_CRON_INSTALL" == "1" ]]; then
+      echo "Cron installation failed and REQUIRE_CRON_INSTALL=1." >&2
+      exit 1
+    fi
+    echo "Warning: cron installation failed; rerun bash $INSTALL_ROOT/scripts/install_cron.sh after fixing cron permissions." >&2
+  fi
 fi
 
 cat <<EOF
@@ -107,4 +127,7 @@ Next:
 Useful toggles:
   - SKIP_DEP_INSTALL=1              install editable package without resolving dependencies
   - VENV_SYSTEM_SITE_PACKAGES=1     inherit already-installed system/site packages into the install venv
+  - ENABLE_RL_CONTROL=1             write RL-control rollout flags to Codex config
+  - RL_ROLLOUT_MODE=shadow|active   choose the RL rollout profile when ENABLE_RL_CONTROL=1
+  - REQUIRE_CRON_INSTALL=1          fail installation if cron setup does not succeed
 EOF

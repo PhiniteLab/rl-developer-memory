@@ -3,17 +3,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from contextlib import contextmanager
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Iterator, Sequence, cast
 
 from .lifecycle import read_server_lifecycle_status
 from .settings import Settings
-
 
 StatusDict = dict[str, Any]
 PROJECT_ROOT = Path(__file__).resolve().parents[2]

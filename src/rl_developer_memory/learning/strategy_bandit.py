@@ -15,7 +15,6 @@ from ..storage import (
 )
 from .posteriors import BetaPosterior, build_beta_posterior, shrinkage_weight
 
-
 _SCOPE_LAMBDAS = {
     "global": 6.0,
     "repo": 3.5,

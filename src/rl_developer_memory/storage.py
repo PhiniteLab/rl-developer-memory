@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import json
+import sqlite3
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-import json
 from pathlib import Path
-import sqlite3
 from typing import Any, Iterator, Mapping, Sequence
 from uuid import uuid4
 
@@ -24,7 +24,6 @@ from .migrations import MigrationRunner, SchemaState
 from .models import PatternBundle
 from .normalization import comma_join, parse_tag_string, tokenize
 from .settings import Settings
-
 
 STRATEGY_PRIOR_ALPHA = 2.0
 STRATEGY_PRIOR_BETA = 2.0

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from hashlib import sha256
-from pathlib import Path
 import json
 import shutil
 import sqlite3
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 from .migrations import inspect_schema

@@ -3,42 +3,39 @@
 ## Scope
 
 `rl-developer-memory` is a local-first developer tool that:
+- stores structured issue data in local SQLite
+- modifies local Codex configuration
+- can schedule local backup automation
+- may store environment excerpts, verification output, and operational metadata
 
-- stores issue patterns in a local SQLite database
-- updates local Codex configuration files
-- can install a scheduled backup job
-
-Security-sensitive areas include:
-
-- config mutation under `~/.codex`
-- local SQLite data handling
-- backup and mirror paths
-- shell-script install behavior
+Security-sensitive surfaces include:
+- `~/.codex/config.toml`
+- local database and backup paths
+- lifecycle lock/state files
+- installation and verification scripts
+- redaction behavior for stored payloads
 
 ## Reporting a vulnerability
 
-Please do not open a public GitHub issue for a security-sensitive finding that includes exploit details, secrets, or unsafe reproduction steps.
+Do **not** open a public issue containing exploit details, secrets, or unsafe reproduction steps.
 
-Preferred reporting path:
+Preferred route:
+1. use GitHub private vulnerability reporting if enabled
+2. otherwise contact the maintainer privately before disclosure
 
-1. Use GitHub's private vulnerability reporting flow for the repository if it is enabled.
-2. If that is not available, contact the maintainer through a private channel associated with the repository before public disclosure.
+## What helps a report
 
-## What to include
-
-Helpful reports include:
-
+Please include:
 - affected version or commit
-- operating environment such as Linux or WSL
-- exact command or install path involved
+- operating environment (Linux / WSL)
+- exact command or workflow involved
 - impact summary
 - minimal reproduction steps
-- whether the issue touches config files, backup paths, or SQLite data
+- whether the issue touches config mutation, SQLite data, backups, or stored sensitive values
 
-## Disclosure expectations
+## Current security posture
 
-Please give the maintainer reasonable time to reproduce and patch the issue before publishing full details.
-
-## Current support stance
-
-This repository is currently documented for Linux and WSL workflows. Native Windows without WSL is not a supported target, so platform-specific behavior outside the documented environment may not receive the same response speed.
+- the project is documented for Linux and WSL workflows
+- redaction is configurable and enabled in the recommended runtime posture
+- active data should stay on the local Linux or WSL filesystem
+- mirrored backup targets should be copies, not the live database path

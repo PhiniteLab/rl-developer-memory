@@ -1,65 +1,56 @@
 # Support
 
-## What this repository supports
+## Supported environments
 
-Primary supported environments:
-
+Primary supported targets:
 - Linux
 - WSL 2
 
-The repository is aimed at:
-
+The project is aimed at:
 - Codex users
 - MCP-based local tooling workflows
-- local SQLite-backed RL developer memory
+- local SQLite-backed memory and RL/control audit workflows
 
 ## Before opening an issue
 
-Please check:
+Read:
+- [README.md](README.md)
+- [docs/INSTALLATION.md](docs/INSTALLATION.md)
+- [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
+- [docs/OPERATIONS.md](docs/OPERATIONS.md)
+- [docs/ROLLOUT.md](docs/ROLLOUT.md)
 
-1. [docs/INSTALLATION.md](docs/INSTALLATION.md)
-2. [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
-3. [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md)
-4. [docs/OPERATIONS.md](docs/OPERATIONS.md)
+Then run the relevant checks:
 
-Then run the relevant local checks:
-
+### Installed bundle
 ```bash
 bash /path/to/install/scripts/verify_install.sh
 ```
 
-or from a development checkout:
-
+### Source checkout
 ```bash
-.venv/bin/python -m pytest
-.venv/bin/python -m rl_developer_memory.maintenance smoke
+ruff check .
+pyright
+python -m pytest
+python -m rl_developer_memory.maintenance smoke
 ```
 
 ## When asking for help
 
-Please include:
-
-- Linux or WSL
+Include:
+- Linux or WSL version
 - Python version
-- how you installed the repo
-- the exact failing command
-- the shortest meaningful error excerpt
-- whether the problem is install, runtime, backup, or matching-related
+- how you installed the project
+- exact command that failed
+- shortest meaningful error excerpt
+- whether the problem is install, runtime, backup, migration, lifecycle, rollout, or matching-related
 
 ## What to expect
 
-Good support requests are the ones that are reproducible and concrete.
-
-The easiest issues to help with are:
-
+The easiest problems to diagnose are:
 - install failures
-- WSL path and environment problems
-- Codex config registration problems
-- smoke-test failures
-- matching regressions backed by test cases
-
-## What this repository does not currently promise
-
-- native Windows support without WSL
-- managed cloud hosting
-- enterprise SLA-style response times
+- Codex registration problems
+- WSL path mistakes
+- smoke or doctor failures
+- backup/restore issues
+- matching regressions backed by tests or reproduction cases

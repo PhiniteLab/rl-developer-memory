@@ -16,8 +16,8 @@ from .fingerprints import (
     make_stack_signature,
 )
 from .query_profile import build_query_profile
-from .strategies import derive_strategy_key, infer_strategy_hints
 from .signatures import build_symptom_cluster, make_pattern_key, make_variant_key
+from .strategies import derive_strategy_key, infer_strategy_hints
 from .text import (
     STOPWORDS,
     canonicalize_exception_name,

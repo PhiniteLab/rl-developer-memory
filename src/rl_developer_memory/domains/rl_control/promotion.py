@@ -25,10 +25,23 @@ class PromotionDecision:
 
 
 def _safe_int(value: object, *, default: int = 0) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
+    if value is None:
         return default
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        normalized = value.strip()
+        if not normalized:
+            return default
+        try:
+            return int(normalized)
+        except ValueError:
+            return default
+    return default
 
 
 def _count_findings(findings: Iterable[RLAuditFinding | Mapping[str, object]]) -> dict[str, int]:
@@ -158,13 +171,11 @@ def decide_promotion(
             finding_counts=counts,
         )
 
-    review_required = False
     review_mode = ""
     review_reason = ""
     applied_tier = normalized_requested
 
     if normalized_requested in {"validated", "theory_reviewed", "production_validated"} and review_gated:
-        review_required = True
         review_mode = "promotion"
         if normalized_requested == "production_validated":
             applied_tier = "validated"

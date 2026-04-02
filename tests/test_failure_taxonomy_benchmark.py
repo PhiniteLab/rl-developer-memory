@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import os
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from rl_developer_memory.app import RLDeveloperMemoryApp
-from rl_developer_memory.benchmarks import NEGATIVE_ABSTAIN_CASES, run_failure_taxonomy_benchmark, seed_user_domain_memory
+from rl_developer_memory.benchmarks import (
+    NEGATIVE_ABSTAIN_CASES,
+    run_failure_taxonomy_benchmark,
+    seed_user_domain_memory,
+)
 
 
 class FailureTaxonomyBenchmarkTests(unittest.TestCase):

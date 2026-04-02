@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 RL_CONTROL_REPORTING_CASES: list[dict[str, Any]] = [
     {
         "name": "experiment",

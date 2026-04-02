@@ -21,6 +21,7 @@ else
   export RL_DEVELOPER_MEMORY_BACKUP_DIR="${RL_DEVELOPER_MEMORY_BACKUP_DIR:-$RL_DEVELOPER_MEMORY_HOME/backups}"
   export RL_DEVELOPER_MEMORY_LOG_DIR="${RL_DEVELOPER_MEMORY_LOG_DIR:-$RL_DEVELOPER_MEMORY_STATE_DIR/log}"
   export RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR="${RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR:-$RL_DEVELOPER_MEMORY_STATE_DIR/run}"
+  export RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH="${RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH:-$RL_DEVELOPER_MEMORY_STATE_DIR/calibration_profile.json}"
 fi
 
 if [[ -x "$INSTALL_ROOT/.venv/bin/python" ]]; then
@@ -67,6 +68,16 @@ echo "[verify] Running rollout doctor..."
 PYTHONPATH="$PYTHONPATH_PREFIX${PYTHONPATH:+:$PYTHONPATH}" \
   "$VERIFY_PYTHON" -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0 --codex-home "$CODEX_HOME"
 
+if grep -q 'RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL = "1"' "$CODEX_HOME/config.toml"; then
+  RL_PROFILE="rl-control-shadow"
+  if grep -q 'RL_DEVELOPER_MEMORY_DOMAIN_MODE = "rl_control"' "$CODEX_HOME/config.toml"; then
+    RL_PROFILE="rl-control-active"
+  fi
+  echo "[verify] Running RL rollout doctor for profile: $RL_PROFILE..."
+  PYTHONPATH="$PYTHONPATH_PREFIX${PYTHONPATH:+:$PYTHONPATH}" \
+    "$VERIFY_PYTHON" -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0 --codex-home "$CODEX_HOME" --profile "$RL_PROFILE"
+fi
+
 echo "[verify] Checking Codex config..."
 CONFIG_MATCHES="$(grep -c "^\[mcp_servers.rl_developer_memory\]" "$CODEX_HOME/config.toml")"
 if [[ "$CONFIG_MATCHES" != "1" ]]; then
@@ -75,11 +86,26 @@ if [[ "$CONFIG_MATCHES" != "1" ]]; then
 fi
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY = "1"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY_ENV = "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY"' "$CODEX_HOME/config.toml"
+grep -n 'RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES = "0"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR = "' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE = "75"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT = "1"' "$CODEX_HOME/config.toml"
 grep -n 'RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "1"' "$CODEX_HOME/config.toml"
+
+echo "[verify] Checking calibration profile..."
+test -f "${RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH:-$RL_DEVELOPER_MEMORY_STATE_DIR/calibration_profile.json}"
+
+echo "[verify] Checking backup availability..."
+backup_count="$(
+  PYTHONPATH="$PYTHONPATH_PREFIX${PYTHONPATH:+:$PYTHONPATH}" \
+    "$VERIFY_PYTHON" -m rl_developer_memory.maintenance list-backups --limit 1 | \
+    "$VERIFY_PYTHON" -c 'import json,sys; print(len(json.load(sys.stdin).get("backups", [])))'
+)"
+if [[ "$backup_count" -lt 1 ]]; then
+  echo "[verify] Expected at least one backup." >&2
+  exit 1
+fi
 
 echo "[verify] Checking AGENTS snippet..."
 grep -n "RL Developer Memory workflow" "$CODEX_HOME/AGENTS.md"

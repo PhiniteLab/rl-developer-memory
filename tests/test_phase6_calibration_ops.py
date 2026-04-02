@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from rl_developer_memory.app import RLDeveloperMemoryApp
 from rl_developer_memory.benchmarks import run_threshold_calibration, seed_real_world_memory

@@ -9,6 +9,10 @@ from .contracts import coerce_json_value
 _SEVERITY_ORDER = {"clean": 0, "info": 1, "warning": 2, "error": 3, "critical": 4}
 
 
+def _mapping_or_empty(value: object) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
 def _normalize_severity(value: object, *, default: str = "info") -> str:
     severity = str(value or default).strip().lower()
     if severity not in {"clean", "info", "warning", "error", "critical"}:
@@ -96,9 +100,9 @@ def summarize_promotion_state(
     validation_payload: Mapping[str, Any] | None = None,
     metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    pattern_payload = pattern or {}
-    validation = validation_payload or (pattern_payload.get("validation_json") if isinstance(pattern_payload.get("validation_json"), Mapping) else {}) or {}
-    meta = metadata or {}
+    pattern_payload: Mapping[str, Any] = pattern or {}
+    validation = validation_payload or _mapping_or_empty(pattern_payload.get("validation_json"))
+    meta: Mapping[str, Any] = metadata or {}
     requested = str(
         meta.get("promotion_requested_tier")
         or validation.get("promotion_requested_tier")
@@ -178,7 +182,7 @@ def build_review_item_audit_report(
     findings: Sequence[Mapping[str, Any]] | None = None,
     artifact_refs: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    metadata = review_item.get("metadata_json") if isinstance(review_item.get("metadata_json"), Mapping) else {}
+    metadata = _mapping_or_empty(review_item.get("metadata_json"))
     pattern_report = build_pattern_audit_report(pattern, findings, artifact_refs)
     promotion = summarize_promotion_state(pattern=pattern, metadata=metadata)
     return {
@@ -206,7 +210,7 @@ def summarize_read_only_audit(matches: Sequence[Mapping[str, Any]] | None) -> di
     for item in rows:
         severity = _normalize_severity(item.get("severity"), default="clean")
         severity_counts[severity] += 1
-        candidate_profile = item.get("candidate_domain_profile") if isinstance(item.get("candidate_domain_profile"), Mapping) else {}
+        candidate_profile = _mapping_or_empty(item.get("candidate_domain_profile"))
         memory_kind = str(candidate_profile.get("memory_kind") or item.get("memory_kind") or "")
         if memory_kind:
             memory_kind_counts[memory_kind] += 1
@@ -239,13 +243,13 @@ def summarize_review_queue_reports(items: Sequence[Mapping[str, Any]] | None) ->
     severity_counts: Counter[str] = Counter()
     for item in rows:
         status_counts[str(item.get("status", "pending") or "pending")] += 1
-        report = item.get("audit_report") if isinstance(item.get("audit_report"), Mapping) else {}
+        report = _mapping_or_empty(item.get("audit_report"))
         mode_counts[str(report.get("review_mode", "consolidation") or "consolidation")] += 1
-        promotion = report.get("promotion") if isinstance(report.get("promotion"), Mapping) else {}
+        promotion = _mapping_or_empty(report.get("promotion"))
         requested = str(promotion.get("requested_tier", "") or "")
         if requested:
             requested_tier_counts[requested] += 1
-        finding_summary = report.get("finding_summary") if isinstance(report.get("finding_summary"), Mapping) else {}
+        finding_summary = _mapping_or_empty(report.get("finding_summary"))
         max_severity = _normalize_severity(finding_summary.get("max_severity"), default="clean")
         severity_counts[max_severity] += 1
     return {
@@ -256,4 +260,3 @@ def summarize_review_queue_reports(items: Sequence[Mapping[str, Any]] | None) ->
         "requested_tier_counts": dict(sorted(requested_tier_counts.items())),
         "max_severity_counts": {key: int(severity_counts.get(key, 0)) for key in ("clean", "info", "warning", "error", "critical")},
     }
-

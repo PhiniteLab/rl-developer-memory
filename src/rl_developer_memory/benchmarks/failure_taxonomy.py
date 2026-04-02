@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
 import statistics
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from .user_domains import USER_DOMAIN_SEED_CASES, seed_user_domain_memory

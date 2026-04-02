@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from rl_developer_memory.app import RLDeveloperMemoryApp
 from rl_developer_memory.benchmarks import run_rl_control_reporting_benchmark
