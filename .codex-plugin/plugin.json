@@ -1,0 +1,25 @@
+{
+  "name": "rl-developer-memory",
+  "version": "0.1.0",
+  "description": "Local-first RL developer memory MCP package for Codex with SQLite-backed retrieval and operational tooling.",
+  "author": {
+    "name": "Mehmet"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "mcp",
+    "rl-developer-memory",
+    "debugging",
+    "sqlite"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "rl-developer-memory",
+    "shortDescription": "RL-aware, local-first developer memory MCP for Codex with retrieval, feedback, and operational controls.",
+    "longDescription": "rl-developer-memory stores reusable debugging and RL/control troubleshooting knowledge in local SQLite and provides ranked issue matching, feedback learning, preference/guardrail workflows, and health/operations tooling for reliable daily Codex usage.",
+    "developerName": "Mehmet",
+    "category": "Productivity"
+  }
+}

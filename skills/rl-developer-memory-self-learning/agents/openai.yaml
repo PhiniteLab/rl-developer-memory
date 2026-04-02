@@ -1,0 +1,10 @@
+interface:
+  display_name: "RL Developer Memory"
+  short_description: "Retrieve known fixes and write back verified recurring solutions."
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "rl_developer_memory"
+      description: "Local RL developer memory MCP server"

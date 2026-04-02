@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "rl-developer-memory-remote-template": {
+      "type": "http",
+      "url": "https://example.invalid/mcp/rl-developer-memory"
+    },
+    "rl-developer-memory-local-command-template": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "-m",
+        "rl_developer_memory.server"
+      ]
+    }
+  }
+}
