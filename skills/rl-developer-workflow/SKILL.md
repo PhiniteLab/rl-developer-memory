@@ -102,7 +102,7 @@ If theorem-to-code or control claims are involved, ensure the output mentions:
 Stay aligned with:
 - `docs/RL_CODING_STANDARDS.md`
 - `docs/RL_BACKBONE.md`
-- `docs/theory_to_code.md`
+- `docs/THEORY_TO_CODE.md`
 
 This means:
 - OOP-compatible, typed, docstring-backed Python

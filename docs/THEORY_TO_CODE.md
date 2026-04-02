@@ -136,7 +136,7 @@ The goal is that any future RL algorithm added to the repo follows the same prof
 | --- | --- | --- | --- |
 | checkpoint_state | rl_developer_memory.experiments.checkpoints.CheckpointManager.save | rl_developer_memory.theory.validators.validate_result_artifacts | true |
 | checkpoint_metadata | rl_developer_memory.experiments.checkpoints.CheckpointManager.save | rl_developer_memory.theory.validators.validate_result_artifacts | true |
-| theory_mapping_doc | docs/theory_to_code.md | rl_developer_memory.theory.sync.validate_theorem_code_sync | true |
+| theory_mapping_doc | docs/THEORY_TO_CODE.md | rl_developer_memory.theory.sync.validate_theorem_code_sync | true |
 | training_report | rl_developer_memory.experiments.runner.ExperimentRunner.run | rl_developer_memory.theory.validators.validate_result_artifacts | true |
 | evaluation_report | rl_developer_memory.evaluation.base.Evaluator.evaluate | rl_developer_memory.theory.validators.validate_result_artifacts | true |
 

@@ -2,17 +2,44 @@
 
 This guide covers the supported installation paths for `rl-developer-memory`.
 
-## Requirements
+## Environment requirements
 
-- Linux or WSL 2
-- Python 3.10+
-- a writable local filesystem for the active database and state directories
-- Codex when you want live MCP registration
+### Supported platforms
+
+- Linux
+- WSL 2
+
+### Required tools
+
+- `git`
+- `python3` with `venv`
+- `pip`
+- `bash`
+
+### Optional tools
+
+- `rsync` for faster bundle copies during `install.sh`
+- `cron` / `crontab` for scheduled backups
+- Codex when you want live MCP registration in `~/.codex/config.toml`
+
+## Python packages
+
+### Runtime packages installed by this project
+
+- `mcp[cli]>=1.0.0,<2.0.0`
+- `tomli>=2.0.1` on Python `<3.11`
+
+### Development packages installed by `.[dev]`
+
+- `pytest>=8.0.0`
+- `pyright>=1.1.380`
+- `ruff>=0.6.0`
+- `build>=1.2.2`
 
 ## Recommended install
 
 ```bash
-git clone https://github.com/<your-user-or-org>/rl-developer-memory.git
+git clone https://github.com/PhiniteLab/rl-developer-memory.git
 cd rl-developer-memory
 bash install.sh
 bash scripts/install_skill.sh --mode copy
@@ -22,8 +49,8 @@ bash scripts/verify_install.sh
 ## What `install.sh` does
 
 1. creates install, data, state, backup, and Codex-home directories
-2. copies the repository into the install root
-3. creates a virtualenv
+2. copies the repository bundle into the install root
+3. creates a virtual environment
 4. installs the package
 5. initializes the database
 6. writes a calibration profile
@@ -37,39 +64,26 @@ bash scripts/verify_install.sh
 - `DATA_ROOT` — runtime data directory
 - `STATE_ROOT` — runtime state and log directory
 - `BACKUP_ROOT` — backup directory
-- `CODEX_HOME` — Codex home for config registration
+- `CODEX_HOME` — Codex home used for config registration
 - `PYTHON_BIN` — Python interpreter to use
-- `SKIP_DEP_INSTALL=1` — install editable package without resolving deps
-- `VENV_SYSTEM_SITE_PACKAGES=1` — create the venv with system packages visible
+- `SKIP_DEP_INSTALL=1` — install the editable package without resolving dependencies
+- `VENV_SYSTEM_SITE_PACKAGES=1` — create the virtual environment with system packages visible
 - `SKIP_CRON_INSTALL=1` — skip cron setup
-- `REQUIRE_CRON_INSTALL=1` — fail install if cron setup does not succeed
-- `ENABLE_RL_CONTROL=1` — register RL-control flags in the live Codex block
-- `RL_ROLLOUT_MODE=shadow|active` — choose RL rollout mode when RL is enabled
+- `REQUIRE_CRON_INSTALL=1` — fail the install if cron setup does not succeed
+- `ENABLE_RL_CONTROL=1` — register RL/control flags in the live Codex block
+- `RL_ROLLOUT_MODE=shadow|active` — choose the RL rollout mode when RL is enabled
 
-Example RL shadow install:
+### Example: RL shadow install
+
 ```bash
 ENABLE_RL_CONTROL=1 RL_ROLLOUT_MODE=shadow bash install.sh
 bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
 
-## Skill install/sync to global surfaces
+## Manual source install
 
-Use the skill installer after runtime install to expose canonical skill content to global discovery surfaces.
-This does not replace runtime authority; `~/.codex/config.toml` remains authoritative.
-
-```bash
-bash scripts/install_skill.sh --mode copy
-```
-
-- `--mode copy` (default): public-share friendly and robust
-- `--mode symlink`: local-dev convenience
-- `--mode generated`: smaller generated discovery bundle
-- `--dry-run --json`: inspect resolved targets without writing
-
-See `docs/SKILL_INSTALL_SYNC.md` for details.
-
-## Manual development install
+Use this when you are developing directly in the repository.
 
 ```bash
 python3 -m venv .venv
@@ -79,34 +93,39 @@ python -m pip install -e .[dev]
 python -m rl_developer_memory.maintenance init-db
 ```
 
-## After install
+If you only want runtime dependencies without developer tooling:
 
-Recommended first checks:
+```bash
+python -m pip install -e .
+```
+
+## First verification commands
+
 ```bash
 rl-developer-memory-maint smoke
 rl-developer-memory-maint doctor --mode shadow --max-instances 0
 rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 python scripts/rl_quality_gate.py --json
 ```
 
-## Verification script
+## Skill installation and sync
 
-`scripts/verify_install.sh` validates:
-- smoke path
-- benchmark-user-domains execution
-- standard doctor
-- RL doctor when RL flags are active
-- Codex config block presence and required env values
-- calibration profile existence
-- backup availability
-- AGENTS snippet presence
-- end-to-end reuse harness when the MCP runtime is importable
+Use the portable skill installer after runtime install to expose canonical skill content to global discovery surfaces.
+This does not replace runtime authority; `~/.codex/config.toml` remains authoritative.
 
-## RL rollout registration semantics
+```bash
+bash scripts/install_skill.sh --mode copy
+python scripts/install_skill.py --mode copy
+```
 
-- `--enable-rl-control --rl-rollout-mode shadow` keeps the RL domain in a conservative shadow posture.
-- `--enable-rl-control --rl-rollout-mode active` writes the stricter active domain mode.
-- In both cases, the preferred owner-key env remains `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY`.
-- Verification should still start from shadow-oriented doctor checks unless live active signoff is explicitly intended.
+Use the shell wrapper for the simplest public-facing path, or call `python scripts/install_skill.py --mode copy` directly when you want the Python entrypoint.
+
+Available modes:
+- `--mode copy` — safest public-share option
+- `--mode symlink` — local development convenience
+- `--mode generated` — generated discovery bundle
+- `--dry-run --json` — inspect resolved targets without writing
+
+For details, see [SKILL_INSTALL_SYNC.md](SKILL_INSTALL_SYNC.md).

@@ -24,7 +24,7 @@ class RegisterCodexTests(unittest.TestCase):
                     "--codex-home",
                     str(base / ".codex"),
                 ],
-                cwd=Path(__file__).resolve().parents[1],
+                cwd=Path(__file__).resolve().parents[3],
                 check=True,
             )
             agents_text = (base / ".codex" / "AGENTS.md").read_text(encoding="utf-8")
@@ -49,7 +49,7 @@ class RegisterCodexTests(unittest.TestCase):
                     "--codex-home",
                     str(base / ".codex"),
                 ],
-                cwd=Path(__file__).resolve().parents[1],
+                cwd=Path(__file__).resolve().parents[3],
                 check=True,
             )
             config_text = (base / ".codex" / "config.toml").read_text(encoding="utf-8")
@@ -75,7 +75,7 @@ class RegisterCodexTests(unittest.TestCase):
                     "--rl-rollout-mode",
                     "active",
                 ],
-                cwd=Path(__file__).resolve().parents[1],
+                cwd=Path(__file__).resolve().parents[3],
                 check=True,
             )
             config_text = (base / ".codex" / "config.toml").read_text(encoding="utf-8")

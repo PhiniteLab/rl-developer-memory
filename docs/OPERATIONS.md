@@ -10,7 +10,7 @@ rl-developer-memory-maint smoke-learning
 rl-developer-memory-maint doctor --mode shadow --max-instances 0
 rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 python scripts/rl_quality_gate.py --json
 ```
 

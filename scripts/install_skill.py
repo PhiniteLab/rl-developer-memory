@@ -19,7 +19,7 @@ def _load_skill_sync_api() -> tuple[
     Callable[..., Any],
     Callable[..., Any],
 ]:
-    from rl_developer_memory.skill_sync import (  # pylint: disable=import-outside-toplevel
+    from rl_developer_memory.skill_bundle_sync import (  # pylint: disable=import-outside-toplevel
         PLUGIN_NAME,
         report_as_json,
         resolve_surface_paths,

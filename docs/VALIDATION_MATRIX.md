@@ -24,7 +24,7 @@ python -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0
 python -m rl_developer_memory.maintenance doctor --mode shadow --profile rl-control-shadow
 python -m rl_developer_memory.maintenance e2e-mcp-reuse-harness --json
 python -m rl_developer_memory.maintenance benchmark-rl-control-reporting
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 python scripts/rl_quality_gate.py --json
 ```
 
@@ -44,7 +44,7 @@ python scripts/rl_quality_gate.py --json
   - duplicate exit code `75` is emitted as a reuse signal
 - `benchmark-rl-control-reporting`
   - RL reporting surfaces, audit summaries, review reports, and metrics remain complete
-- `scripts/release_acceptance.py --json`
+- `scripts/release_readiness.py --json`
   - emits a structured validation matrix
   - checks docs ↔ CLI ↔ MCP surface sync
   - evaluates automated rollout readiness without treating active rollout as the default
@@ -53,7 +53,7 @@ python scripts/rl_quality_gate.py --json
 
 ## Minimum RL quality gate checklist
 
-`scripts/release_acceptance.py --json` now emits a `minimum_quality_gate` section that evaluates the
+`scripts/release_readiness.py --json` now emits a `minimum_quality_gate` section that evaluates the
 following checklist against command results and repository contracts:
 
 1. repository structure compliance
@@ -95,7 +95,7 @@ Default decision rule:
   - review backlog is explicitly assessed as manageable
   - promotion/review policy is accepted by the team operating the rollout
 
-Because review backlog and shadow soak are operational signals, `scripts/release_acceptance.py` intentionally keeps the default active decision at **no-go** unless those live signals are supplied outside the script.
+Because review backlog and shadow soak are operational signals, `scripts/release_readiness.py` intentionally keeps the default active decision at **no-go** unless those live signals are supplied outside the script.
 
 ## CI guidance
 

@@ -1,244 +1,240 @@
 # rl-developer-memory
 
+[![CI](https://github.com/PhiniteLab/rl-developer-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/PhiniteLab/rl-developer-memory/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![GitHub release](https://img.shields.io/github/v/release/PhiniteLab/rl-developer-memory?display_name=tag)](https://github.com/PhiniteLab/rl-developer-memory/releases)
+
 ![rl-developer-memory cover](assets/cover.png)
 
-`rl-developer-memory` is a **local-first MCP server for Codex** that stores reusable debugging and operational knowledge in SQLite, ranks prior fixes for recurring failures, and adds an **optional RL/control-aware audit layer** for experiment-heavy workflows.
+`rl-developer-memory` is a **local-first MCP server for Codex** that stores reusable debugging knowledge in SQLite, ranks prior fixes for recurring failures, and adds an optional **RL/control-aware audit layer** for experiment-heavy workflows.
 
-It ships three things together:
+The repository is designed for teams and solo developers who want:
+- a local memory of verified fixes,
+- a small operational surface,
+- explicit rollout and validation discipline,
+- and a public repo that is easy to install, read, and maintain.
 
-1. a Python MCP server exposed as `rl_developer_memory`
-2. a maintenance CLI named `rl-developer-memory-maint`
-3. an installation, verification, and portable skill-sync workflow for Codex-centered local deployments
+## What you get
 
-## What the project does
+This repository ships three public surfaces:
 
-- stores reusable issue patterns, variants, episodes, feedback, preferences, and review items in local SQLite
-- returns compact ranked matches for recurring failures through MCP tools
-- supports lifecycle, backup, restore, calibration, dashboard export, and rollout verification commands
-- can operate in a generic debugging mode or in an **RL/control shadow or active posture**
-- stays local-first: the runtime database, state, logs, and backups are yours
+1. **MCP server**: `python -m rl_developer_memory.server`
+2. **Maintenance CLI**: `rl-developer-memory-maint`
+3. **Repository tooling**: install, verification, examples, skill sync, and release-readiness scripts
 
-## Current public surface
+- **MCP surface:** a focused set of reusable retrieval, review, preference, and reporting tools
+- **Maintenance surface:** a comprehensive CLI for lifecycle, backup, rollout, calibration, diagnostics, and release-readiness checks
 
-- **Runtime identity:** `rl_developer_memory`
-- **Package identity:** `rl-developer-memory`
-- **Primary entrypoint:** `python -m rl_developer_memory.server`
-- **MCP surface:** **12 tools**
-- **Maintenance surface:** **28 CLI subcommands** via `rl-developer-memory-maint`
-- **Live MCP authority:** `~/.codex/config.toml`
+## Key capabilities
 
-## Public MCP tools
+- Store reusable issue patterns, variants, episodes, feedback, preferences, and review items in local SQLite.
+- Retrieve ranked prior fixes through MCP tools such as `issue_match`, `issue_get`, and `issue_guardrails`.
+- Run lifecycle, backup, restore, rollout, calibration, and diagnostics commands from one CLI.
+- Operate in generic debugging mode or in RL/control-aware shadow and active rollout modes.
+- Keep runtime state local to your Linux or WSL filesystem.
 
-### Retrieval and inspection
-- `issue_match`
-- `issue_get`
-- `issue_search`
-- `issue_recent`
+## Repository layout
 
-### Write-back and feedback
-- `issue_record_resolution`
-- `issue_feedback`
+```text
+.
+├── src/rl_developer_memory/   # Python package and MCP server
+├── tests/                     # unit, integration, regression, and smoke tests
+├── docs/                      # focused user and operator documentation
+├── examples/                  # runnable RL/control scenarios and outputs
+├── scripts/                   # install, verification, and helper scripts
+├── configs/                   # example rollout and backbone configs
+├── templates/                 # example config and integration templates
+└── .github/workflows/         # CI and release automation
+```
 
-### Preferences and prevention
-- `issue_set_preference`
-- `issue_list_preferences`
-- `issue_guardrails`
+## Requirements
 
-### Operations and review
-- `issue_metrics`
-- `issue_review_queue`
-- `issue_review_resolve`
+### Supported environment
 
-## Maintenance CLI surface
+- **OS**: Linux or WSL 2
+- **Python**: 3.10, 3.11, or 3.12
+- **Shell**: Bash-compatible shell for the bundled install scripts
+- **Filesystem**: keep the active database on the local Linux/WSL filesystem, not `/mnt/c/...`
 
-The maintenance CLI is the operational control plane for local installs.
+### System tools you may need
 
-### Schema and bootstrap
-- `init-db`
-- `migrate-v2`
-- `schema-version`
+| Tool | Required | Why |
+| --- | --- | --- |
+| `git` | Yes | Clone the repository |
+| `python3` + `venv` | Yes | Create the project environment |
+| `pip` | Yes | Install Python dependencies |
+| `bash` | Yes | Run install and verification scripts |
+| `rsync` | Optional | Faster/safer bundle copy in `install.sh` |
+| `cron` / `crontab` | Optional | Scheduled backups |
+| Codex | Optional | Needed only for live MCP registration |
 
-### Backups
-- `backup`
-- `list-backups`
-- `verify-backup`
-- `restore-backup`
+### Python dependencies
 
-### Health and lifecycle
-- `smoke`
-- `smoke-learning`
-- `server-status`
-- `runtime-diagnostics`
-- `recommended-config`
-- `doctor`
-- `e2e-mcp-reuse-harness`
+The runtime dependency surface is intentionally small.
 
-### Operations telemetry
-- `metrics`
-- `export-dashboard`
-- `prune-retention`
+**Installed automatically by the package:**
+- `mcp[cli]>=1.0.0,<2.0.0`
+- `tomli>=2.0.1` on Python `<3.11`
 
-### Review queue
-- `review-queue`
-- `resolve-review`
+**Recommended for development and release checks:**
+- `pytest>=8.0.0`
+- `pyright>=1.1.380`
+- `ruff>=0.6.0`
+- `build>=1.2.2`
 
-### Benchmarks and calibration
-- `benchmark-user-domains`
-- `benchmark-rl-control-reporting`
-- `benchmark-failure-taxonomy`
-- `benchmark-dense-bandit`
-- `benchmark-real-world`
-- `benchmark-hard-negatives`
-- `benchmark-merge-stress`
-- `calibrate-thresholds`
+## Installation
 
-## Quick start
+### Option A — recommended local install
 
-### Recommended install
+Use this when you want the full local runtime, verification flow, and Codex registration support.
+
 ```bash
-git clone https://github.com/<your-user-or-org>/rl-developer-memory.git
+git clone https://github.com/PhiniteLab/rl-developer-memory.git
 cd rl-developer-memory
 bash install.sh
 bash scripts/install_skill.sh --mode copy
 bash scripts/verify_install.sh
 ```
 
-That flow:
-- creates the Python environment
-- initializes the SQLite store
-- writes a calibration profile
-- creates an initial backup
-- registers the live MCP block in `~/.codex/config.toml`
-- syncs the canonical skill/plugin bundle into global `.codex` and `.agents` discovery surfaces
-- verifies smoke, doctor, config, backup, calibration, and reuse behavior
+What this does:
+- creates the runtime directories,
+- creates a virtual environment,
+- installs the package,
+- initializes the SQLite database,
+- writes a calibration profile,
+- creates an initial backup,
+- registers the MCP block in `~/.codex/config.toml`,
+- and verifies the local install.
 
-### Recommended first checks
-```bash
-rl-developer-memory-maint smoke
-rl-developer-memory-maint doctor --mode shadow --max-instances 0
-rl-developer-memory-maint server-status
-rl-developer-memory-maint e2e-mcp-reuse-harness --json
-python scripts/release_acceptance.py --json
-```
+### Option B — source checkout / development install
 
-## Install modes
+Use this when you want to work directly from the repository.
 
-### Mode A — Standard MCP install
-Use `install.sh` when you want the real MCP runtime available in Codex.
-
-Important installer toggles:
-- `SKIP_DEP_INSTALL=1`
-- `VENV_SYSTEM_SITE_PACKAGES=1`
-- `ENABLE_RL_CONTROL=1`
-- `RL_ROLLOUT_MODE=shadow|active`
-- `REQUIRE_CRON_INSTALL=1`
-- `SKIP_CRON_INSTALL=1`
-
-Example RL shadow install:
-```bash
-ENABLE_RL_CONTROL=1 RL_ROLLOUT_MODE=shadow bash install.sh
-bash scripts/install_skill.sh --mode copy
-bash scripts/verify_install.sh
-```
-
-### Global skill sync
-
-The repository is the **canonical source** for the RL skill bundle. After checkout or install, sync the
-bundle into global discovery surfaces with:
-
-```bash
-python scripts/install_skill.py --dry-run --json
-python scripts/install_skill.py --mode copy
-```
-
-Copy mode is the default and most public-share friendly option. For details, see
-[docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md).
-
-### Mode B — Manual / source-checkout workflow
 ```bash
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e .[dev]
 python -m rl_developer_memory.maintenance init-db
-python -m rl_developer_memory.server
 ```
 
-If you choose the manual path, you must still create exactly one live `[mcp_servers.rl_developer_memory]` block in `~/.codex/config.toml`.
+If you also want to build release artifacts locally:
 
-## RL/control support
+```bash
+python -m build
+```
 
-The repository can operate in two practical modes:
+## First commands to run
 
-- **generic mode** for broad engineering failures
-- **RL/control mode** for experiment, theory, sim2real, and control-audit-heavy workflows
+After installing, these are the most useful first checks:
 
-Recommended rollout order:
-1. install in normal shadow posture
-2. enable RL shadow profile
-3. verify `doctor --profile rl-control-shadow`
-4. verify `benchmark-rl-control-reporting`
-5. inspect `rl-audit-health`
-6. only then consider an active RL rollout
+```bash
+rl-developer-memory-maint smoke
+rl-developer-memory-maint doctor --mode shadow --max-instances 0
+rl-developer-memory-maint server-status
+rl-developer-memory-maint e2e-mcp-reuse-harness --json
+python scripts/release_readiness.py --json
+```
 
-Even after the automated matrix passes, keep the default active decision at **no-go** until live shadow soak and review-backlog signoff are complete.
+## Minimal usage examples
 
-## Live runtime rules
+### 1) Retrieve a previous fix through Python
 
-- keep exactly one live `[mcp_servers.rl_developer_memory]` block in `~/.codex/config.toml`
-- keep the active database on the local Linux or WSL filesystem
-- prefer explicit `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY` injection per main conversation
-- treat duplicate exit code `75` as a reuse signal, not as a generic failure
-- keep calibration profiles and backups current
+```python
+from rl_developer_memory.app import RLDeveloperMemoryApp
 
-## Validation and quality
+app = RLDeveloperMemoryApp()
+result = app.issue_match(
+    error_text="sqlite3.OperationalError: database is locked",
+    command="python train.py",
+    file_path="tracking/sqlite_index.py",
+    project_scope="rl-lab",
+)
+print(result["decision"])
+```
 
-Current repository expectations:
+### 2) Store a verified reusable fix
+
+```python
+app.issue_record_resolution(
+    title="CLI import fails under the wrong interpreter",
+    raw_error="ModuleNotFoundError: No module named requests",
+    canonical_fix="Run the CLI inside the project virtual environment.",
+    prevention_rule="Pin the launcher to the intended interpreter.",
+    verification_steps="Re-run the CLI inside the same virtual environment.",
+    project_scope="global",
+)
+```
+
+### 3) Run the bundled RL examples
+
+```bash
+PYTHONPATH=src .venv/bin/python examples/run_rl_scenarios.py \
+  --output-json /tmp/rl_scenarios_metrics.json \
+  --output-markdown /tmp/rl_scenarios_summary.md
+```
+
+This avoids overwriting the committed sample snapshots under `examples/results/`.
+
+## Configuration notes
+
+- Live MCP runtime authority is `~/.codex/config.toml`.
+- Prefer `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY` for main-conversation ownership.
+- Treat duplicate exit code `75` as a reuse signal, not as a generic crash.
+- Default rollout posture should remain **shadow** until you have explicit validation evidence for stronger rollout.
+
+## Validation and release readiness
+
+Use the canonical validation matrix in [`docs/VALIDATION_MATRIX.md`](docs/VALIDATION_MATRIX.md).
+
+Quick local sanity check:
+
 ```bash
 ruff check .
 pyright
 python -m pytest
-python -m rl_developer_memory.maintenance smoke
-python -m build
 ```
 
-The repository also ships a CI workflow that runs these core gates automatically on push and pull request.
+Full release-readiness report:
 
-For the full rollout/orchestration gate, run:
 ```bash
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 ```
 
-That matrix bootstraps a temporary Linux/WSL-safe runtime, verifies shadow doctor + RL shadow doctor + MCP reuse harness + RL reporting benchmark, checks docs/CLI/MCP sync, and emits a conservative **active rollout go/no-go** decision.
+That report covers install/runtime assumptions, docs-command consistency, reuse behavior, RL reporting checks, and conservative rollout readiness.
 
 ## Documentation map
 
 - [docs/README.md](docs/README.md) — documentation index
-- [docs/INSTALLATION.md](docs/INSTALLATION.md) — install and first-run workflow
+- [docs/INSTALLATION.md](docs/INSTALLATION.md) — installation and verification details
+- [docs/USAGE.md](docs/USAGE.md) — MCP, CLI, and Python usage patterns
 - [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — runtime configuration model
-- [docs/OPERATIONS.md](docs/OPERATIONS.md) — health, backup, restore, and lifecycle operations
-- [docs/ROLLOUT.md](docs/ROLLOUT.md) — shadow/active rollout guidance
-- [docs/USAGE.md](docs/USAGE.md) — MCP and Python usage patterns
-- [docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md) — portable global skill sync for `.codex` and `.agents` surfaces
-- [docs/MCP_RL_INTEGRATION_POLICY.md](docs/MCP_RL_INTEGRATION_POLICY.md) — RL lifecycle contract for MCP decision, scope, preference, feedback, and write-back
-- [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) — short scope and verified write-back operations note
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — runtime/data-flow overview
-- [docs/RL_BACKBONE.md](docs/RL_BACKBONE.md) — RL development backbone folders and contracts
-- [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) — RL coding, validation, and delivery standards
-- [docs/theory_to_code.md](docs/theory_to_code.md) — theorem/assumption/objective mappings to code
-- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — contributor workflow
-- [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) — minimum professional RL acceptance gate
-- [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) — supported environments
-- [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — dependency posture
-- [docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md](docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md) — owner-key model
-- [docs/CODEX_RL_AGENT_OPERATING_MODEL.md](docs/CODEX_RL_AGENT_OPERATING_MODEL.md) — agent-oriented RL orchestration contract for Codex
-- [docs/ORCHESTRATION_STDLIO_REUSE_CHECKLIST.md](docs/ORCHESTRATION_STDLIO_REUSE_CHECKLIST.md) — reuse validation checklist
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — backup, restore, diagnostics, and lifecycle operations
+- [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — dependency policy and install notes
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — runtime and data-flow overview
+- [docs/RL_BACKBONE.md](docs/RL_BACKBONE.md) — RL development backbone layout
+- [docs/THEORY_TO_CODE.md](docs/THEORY_TO_CODE.md) — theorem/assumption/objective mappings to code
+- [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) — coding and delivery standards for RL/control work
+- [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) — scope-selection and write-back hygiene
+- [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) — minimum RL engineering acceptance gate
+- [docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md) — portable global skill sync for `.codex`/`.agents`
+- [examples/README.md](examples/README.md) — runnable example scenarios
 
-## Contributing and support
+## Community and project standards
 
-- Contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Support guidance: [SUPPORT.md](SUPPORT.md)
-- Security policy: [SECURITY.md](SECURITY.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contributor workflow
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community expectations
+- [SECURITY.md](SECURITY.md) — private vulnerability reporting and response expectations
+- [SUPPORT.md](SUPPORT.md) — support expectations, troubleshooting route, and issue routing
+- [CHANGELOG.md](CHANGELOG.md) — notable public-facing changes
+
+## GitHub issue routing
+
+- Use the **Bug report** template for reproducible install, runtime, validation, rollout, or matching problems.
+- Use the **Feature request** template for scoped improvements.
+- Use [SECURITY.md](SECURITY.md) for vulnerabilities; do **not** put exploit details in a public issue.
+- Use [SUPPORT.md](SUPPORT.md) before opening usage or environment questions.
 
 ## License
 

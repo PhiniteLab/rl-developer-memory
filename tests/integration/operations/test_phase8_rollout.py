@@ -76,7 +76,7 @@ class Phase8RolloutTests(unittest.TestCase):
                 str(self.codex_home),
             ],
             check=True,
-            cwd=Path(__file__).resolve().parents[1],
+            cwd=Path(__file__).resolve().parents[3],
         )
 
     def test_recommended_config_emits_shadow_defaults(self) -> None:
@@ -139,7 +139,7 @@ class Phase8RolloutTests(unittest.TestCase):
         self.assertIn('RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"', config_text)
 
     def test_maintenance_cli_runs_e2e_mcp_reuse_harness(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[3]
         env = os.environ.copy()
         src_root = str(repo_root / "src")
         env["PYTHONPATH"] = src_root + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")

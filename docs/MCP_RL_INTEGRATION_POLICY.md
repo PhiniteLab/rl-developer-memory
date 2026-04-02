@@ -336,7 +336,7 @@ Bad:
 ### Flow D — theorem inconsistency
 
 1. theorem/code sync or audit failure appears
-2. `issue_match(error_text=..., file_path="docs/theory_to_code.md" or related module, project_scope="rl-developer-memory")`
+2. `issue_match(error_text=..., file_path="docs/THEORY_TO_CODE.md" or related module, project_scope="rl-developer-memory")`
 3. inspect top match or guardrails
 4. fix registry/doc/audit mismatch
 5. validate with theorem sync script + tests

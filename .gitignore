@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local example-run artifacts
+examples/results/*.local.json
+examples/results/*.local.md

@@ -42,7 +42,7 @@ Do not bypass these layers with ad-hoc monolithic scripts unless the change is e
 ### 1. Theory-to-code traceability
 
 If a change affects objectives, assumptions, theorem claims, stabilization, or evaluation:
-- update `docs/theory_to_code.md` when the public mapping changes
+- update `docs/THEORY_TO_CODE.md` when the public mapping changes
 - preserve class/method anchors used by the theorem sync surface
 - keep hidden assumptions explicit when they affect correctness or safety
 
@@ -66,28 +66,11 @@ At minimum, RL-facing changes should not regress:
 
 ## Validation expectations
 
-For accepted RL work, run the repository quality gate appropriate to the change:
+For accepted RL work, run the repository quality gate appropriate to the change.
 
-### Core
-```bash
-ruff check .
-pyright
-python -m pytest
-python -m rl_developer_memory.maintenance smoke
-python -m build
-```
-
-### RL/runtime extensions when relevant
-```bash
-python -m rl_developer_memory.maintenance smoke-learning
-python -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0
-python -m rl_developer_memory.maintenance doctor --mode shadow --profile rl-control-shadow
-python -m rl_developer_memory.maintenance e2e-mcp-reuse-harness --json
-python -m rl_developer_memory.maintenance benchmark-rl-control-reporting
-python scripts/validate_theory_code_sync.py
-python scripts/run_rl_backbone_smoke.py
-python scripts/rl_quality_gate.py --json
-```
+- Use `docs/VALIDATION_MATRIX.md` as the canonical command matrix.
+- Use `python scripts/rl_quality_gate.py --json` for the higher-level RL acceptance report.
+- Keep theorem, rollout, and MCP-policy checks aligned with `docs/THEORY_TO_CODE.md`, `docs/ROLLOUT.md`, and `docs/MCP_RL_INTEGRATION_POLICY.md`.
 
 ## Delivery standard
 
@@ -101,7 +84,7 @@ A change is not ready to present as professional RL work unless:
 ## Related documents
 
 - `docs/RL_BACKBONE.md`
-- `docs/theory_to_code.md`
+- `docs/THEORY_TO_CODE.md`
 - `docs/RL_QUALITY_GATE.md`
 - `docs/MCP_RL_INTEGRATION_POLICY.md`
 - `docs/CODEX_RL_AGENT_OPERATING_MODEL.md`

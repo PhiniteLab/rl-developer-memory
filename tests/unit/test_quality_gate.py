@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rl_developer_memory.quality_gate import evaluate_memory_hygiene, evaluate_repository_structure
+from rl_developer_memory.quality_checks import evaluate_memory_hygiene, evaluate_repository_structure
 
 ROOT = Path(__file__).resolve().parents[2]
 

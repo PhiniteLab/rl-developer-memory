@@ -49,7 +49,7 @@ class ParentProcessOwnerKeyFallbackTests(unittest.TestCase):
         payload: dict[str, object] = {
             "id": thread_id,
             "timestamp": "2026-03-29T00:00:00Z",
-            "cwd": str(Path(__file__).resolve().parents[1]),
+            "cwd": str(Path(__file__).resolve().parents[3]),
             "originator": "codex_vscode",
             "cli_version": "test",
             "source": "vscode",

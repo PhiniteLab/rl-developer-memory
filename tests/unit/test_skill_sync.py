@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from rl_developer_memory.skill_sync import (
+from rl_developer_memory.skill_bundle_sync import (
     PLUGIN_NAME,
     ensure_marketplace_entry,
     resolve_surface_paths,

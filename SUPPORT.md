@@ -35,6 +35,13 @@ python -m pytest
 python -m rl_developer_memory.maintenance smoke
 ```
 
+## Choose the right public route
+
+- **Bug report**: use the GitHub **Bug report** template for reproducible install, runtime, migration, rollout, or matching failures.
+- **Feature request**: use the GitHub **Feature request** template for scoped improvements.
+- **Security issue**: follow [SECURITY.md](SECURITY.md) and use private reporting. Do **not** post vulnerability details publicly.
+- **Usage question / troubleshooting**: include the checks below and the shortest useful reproduction details in your issue.
+
 ## When asking for help
 
 Include:

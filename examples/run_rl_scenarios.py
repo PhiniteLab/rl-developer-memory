@@ -21,7 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
 PYTHON_BIN = sys.executable
 OWNER_KEY = "examples-main-thread"
-MANIFEST_PATH = REPO_ROOT / "EXAMPLES" / "scenario_manifest.json"
+MANIFEST_PATH = REPO_ROOT / "examples" / "scenario_manifest.json"
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class ScenarioSpec:
 
     @property
     def script_path(self) -> Path:
-        return REPO_ROOT / "EXAMPLES" / "scenarios" / self.script_name
+        return REPO_ROOT / "examples" / "scenarios" / self.script_name
 
 
 def load_manifest() -> tuple[str, tuple[ScenarioSpec, ...]]:
@@ -51,8 +51,8 @@ def load_manifest() -> tuple[str, tuple[ScenarioSpec, ...]]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run hard RL coding scenarios through the real MCP stdio surface.")
-    parser.add_argument("--output-json", type=Path, default=REPO_ROOT / "EXAMPLES" / "results" / "rl_scenarios_metrics.json")
-    parser.add_argument("--output-markdown", type=Path, default=REPO_ROOT / "EXAMPLES" / "results" / "rl_scenarios_summary.md")
+    parser.add_argument("--output-json", type=Path, default=REPO_ROOT / "examples" / "results" / "rl_scenarios_metrics.json")
+    parser.add_argument("--output-markdown", type=Path, default=REPO_ROOT / "examples" / "results" / "rl_scenarios_summary.md")
     return parser
 
 

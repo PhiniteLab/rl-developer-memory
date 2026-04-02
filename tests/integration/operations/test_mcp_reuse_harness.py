@@ -7,14 +7,14 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-HARNESS = ROOT / "scripts" / "e2e_mcp_reuse_harness.py"
+ROOT = Path(__file__).resolve().parents[3]
+HARNESS = ROOT / "scripts" / "mcp_reuse_harness.py"
 
 
 pytest.importorskip("mcp.server.fastmcp", reason="requires installed MCP runtime dependency for end-to-end launch")
 
 
-def test_e2e_mcp_reuse_harness_reports_expected_contract() -> None:
+def test_mcp_reuse_harness_reports_expected_contract() -> None:
     proc = subprocess.run(
         [sys.executable, str(HARNESS), "--json", "--timeout", "10"],
         cwd=ROOT,

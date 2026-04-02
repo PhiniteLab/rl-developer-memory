@@ -309,7 +309,7 @@ Use RL-specific validation when relevant:
 - `python -m rl_developer_memory.maintenance doctor --mode shadow --profile rl-control-shadow`
 - `python -m rl_developer_memory.maintenance e2e-mcp-reuse-harness --json`
 - `python -m rl_developer_memory.maintenance benchmark-rl-control-reporting`
-- `python scripts/release_acceptance.py --json`
+- `python scripts/release_readiness.py --json`
 
 ---
 
@@ -335,10 +335,10 @@ Use RL-specific validation when relevant:
 
 ## Example C — rollout hardening
 
-- Explorer: inspect release_acceptance, maintenance, rollout docs, ownership docs
+- Explorer: inspect release_readiness, maintenance, rollout docs, ownership docs
 - Router: classify as operational hardening
 - Refactorer: patch readiness/reporting/docs/tests
-- Validator: run doctor/harness/benchmark/release_acceptance
+- Validator: run doctor/harness/benchmark/release_readiness
 - Reviewer: confirm active recommendation stayed conservative
 
 ---

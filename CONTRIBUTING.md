@@ -2,7 +2,7 @@
 
 Thanks for contributing to `rl-developer-memory`.
 
-This project is a local-first Python MCP service. Good contributions improve **correctness, install reliability, retrieval quality, rollout safety, and documentation clarity** without bloating the dependency or runtime surface.
+This project is a local-first Python MCP service. Strong contributions improve **correctness, install reliability, retrieval quality, rollout safety, and documentation clarity** without bloating the dependency or runtime surface.
 
 ## Before you start
 
@@ -27,28 +27,25 @@ python -m pip install -e .[dev]
 - validation evidence
 - explicit treatment of runtime/config side effects
 - no surprise behavior in backup, migration, lifecycle, or rollout paths
-- documentation kept in sync with code
+- documentation kept in sync with code and scripts
+- public-facing changes reflected in `CHANGELOG.md` when appropriate
 
 ## Validation expectations
 
-For most code changes, run:
+Use [`docs/VALIDATION_MATRIX.md`](docs/VALIDATION_MATRIX.md) as the canonical command matrix.
+
+Minimum contributor check:
 
 ```bash
 ruff check .
 pyright
 python -m pytest
-python -m rl_developer_memory.maintenance smoke
-python -m build
 ```
 
-Add these when relevant:
+When release-impacting behavior changes, also run:
 
 ```bash
-python -m rl_developer_memory.maintenance smoke-learning
-python -m rl_developer_memory.maintenance doctor --mode shadow --max-instances 0
-python -m rl_developer_memory.maintenance doctor --mode shadow --profile rl-control-shadow
-python -m rl_developer_memory.maintenance e2e-mcp-reuse-harness --json
-python -m rl_developer_memory.maintenance benchmark-rl-control-reporting
+python scripts/release_readiness.py --json
 ```
 
 ## Install / registration changes
@@ -74,8 +71,9 @@ If you touch README or docs:
 - keep command names in sync with `maintenance.py`
 - keep MCP tool names in sync with `server.py`
 - keep install steps in sync with `install.sh`, `register_codex.py`, and `verify_install.sh`
+- keep example paths in sync with `examples/`
 
-## PR checklist
+## Pull request checklist
 
 Include:
 - what changed

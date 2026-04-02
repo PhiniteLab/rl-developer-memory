@@ -92,7 +92,7 @@ class Phase6RLAuditOpsTests(unittest.TestCase):
         self.assertGreaterEqual(payload["findings"]["total"], 0)
 
     def test_doctor_passes_for_registered_rl_shadow_profile(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[3]
         install_root = Path(self.temp_dir.name) / "install"
         install_root.mkdir(parents=True, exist_ok=True)
         subprocess.run(

@@ -14,7 +14,7 @@ def main() -> None:
     registry = build_default_theory_registry()
     result = validate_theorem_code_sync(
         registry,
-        doc_path=repo_root / "docs" / "theory_to_code.md",
+        doc_path=repo_root / "docs" / "THEORY_TO_CODE.md",
     )
     blueprint_result = validate_training_blueprint_sync(build_training_blueprint_catalog(registry))
     combined = {

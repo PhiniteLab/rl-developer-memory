@@ -28,7 +28,7 @@ def resolve_anchor(anchor: str) -> Any:
 
 
 def load_doc_mappings(path: Path) -> dict[str, dict[str, str]]:
-    """Parse the machine-readable mapping table from docs/theory_to_code.md."""
+    """Parse the machine-readable mapping table from docs/THEORY_TO_CODE.md."""
 
     mapping_rows: dict[str, dict[str, str]] = {}
     in_mapping_table = False

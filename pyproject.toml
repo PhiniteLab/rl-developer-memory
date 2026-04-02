@@ -5,21 +5,27 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rl-developer-memory"
 version = "0.1.0"
-description = "Local self-learning RL developer memory MCP server for Codex"
+description = "Local-first MCP server for reusable debugging memory and RL/control-aware developer workflows"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-keywords = ["codex", "mcp", "sqlite", "debugging", "developer-tools", "agent-memory"]
+authors = [
+  { name = "Mehmet" },
+]
+keywords = ["codex", "mcp", "sqlite", "debugging", "developer-tools", "agent-memory", "reinforcement-learning"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Software Development :: Debuggers",
+  "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
@@ -29,10 +35,21 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "build>=1.2.2",
   "pytest>=8.0.0",
   "pyright>=1.1.380",
   "ruff>=0.6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/PhiniteLab/rl-developer-memory"
+Repository = "https://github.com/PhiniteLab/rl-developer-memory"
+Documentation = "https://github.com/PhiniteLab/rl-developer-memory/tree/main/docs"
+Issues = "https://github.com/PhiniteLab/rl-developer-memory/issues"
+Changelog = "https://github.com/PhiniteLab/rl-developer-memory/blob/main/CHANGELOG.md"
+Releases = "https://github.com/PhiniteLab/rl-developer-memory/releases"
+Security = "https://github.com/PhiniteLab/rl-developer-memory/security/policy"
+Support = "https://github.com/PhiniteLab/rl-developer-memory/blob/main/SUPPORT.md"
 
 [project.scripts]
 rl-developer-memory-maint = "rl_developer_memory.maintenance:main"

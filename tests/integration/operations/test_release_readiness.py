@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rl_developer_memory.release_acceptance import (
+from rl_developer_memory.release_readiness import (
     evaluate_minimum_quality_gate,
     evaluate_rollout_readiness,
     validate_docs_sync,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_docs_sync_report_matches_public_surface() -> None:

@@ -40,7 +40,7 @@ Turn on RL support conservatively:
 rl-developer-memory-maint recommended-config --mode shadow --profile rl-control-shadow
 rl-developer-memory-maint doctor --mode shadow --profile rl-control-shadow
 rl-developer-memory-maint benchmark-rl-control-reporting
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 rl-developer-memory-maint rl-audit-health --window-days 30 --limit 10
 ```
 
@@ -68,7 +68,7 @@ Automated validation can prove codebase readiness, but it should still default t
 
 Recommended evidence collection:
 ```bash
-python scripts/release_acceptance.py --json
+python scripts/release_readiness.py --json
 python scripts/rl_quality_gate.py --json
 ```
 

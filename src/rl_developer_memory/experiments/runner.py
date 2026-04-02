@@ -110,7 +110,7 @@ class ExperimentRunner:
         return [
             {"kind": "checkpoint_state", "uri": checkpoint_state.as_posix(), "description": f"{blueprint.algorithm_key} checkpoint state"},
             {"kind": "checkpoint_metadata", "uri": checkpoint_meta.as_posix(), "description": f"{blueprint.algorithm_key} checkpoint metadata"},
-            {"kind": "theory_mapping_doc", "uri": (repo_root / "docs" / "theory_to_code.md").as_posix(), "description": "Theorem/code mapping reference"},
+            {"kind": "theory_mapping_doc", "uri": (repo_root / "docs" / "THEORY_TO_CODE.md").as_posix(), "description": "Theorem/code mapping reference"},
             {"kind": "training_report", "uri": f"memory://{self.config.experiment_name}/training-report", "description": "Structured training report payload"},
             {"kind": "evaluation_report", "uri": f"memory://{self.config.experiment_name}/evaluation-report", "description": "Structured evaluation report payload"},
         ]
@@ -207,7 +207,7 @@ class ExperimentRunner:
         artifact_refs = self._build_artifact_refs(checkpoint_manager=checkpoint_manager, blueprint=blueprint, latest_step=checkpoint["latest_step"])
         theory_sync_check = validate_theorem_code_sync(
             self.registry,
-            doc_path=Path(__file__).resolve().parents[3] / "docs" / "theory_to_code.md",
+            doc_path=Path(__file__).resolve().parents[3] / "docs" / "THEORY_TO_CODE.md",
         )
         theory_findings = []
         theory_findings.extend(validate_blueprint_registry_alignment(blueprint, registry=self.registry))

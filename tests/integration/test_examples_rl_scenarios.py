@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "EXAMPLES" / "run_rl_scenarios.py"
+SCRIPT = ROOT / "examples" / "run_rl_scenarios.py"
 
 
 def test_rl_scenario_demo_routes_hard_buggy_code_to_correct_fixes(tmp_path: Path) -> None:

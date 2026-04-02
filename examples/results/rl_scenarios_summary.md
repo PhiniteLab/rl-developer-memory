@@ -1,6 +1,6 @@
 # RL MCP hard scenario demo
 
-- Generated at: `2026-04-02T21:55:08+00:00`
+- Generated at: `2026-04-02T22:37:33+00:00`
 - Transport: `mcp_stdio` via `rl-developer-memory`
 - Overall status: **passed**
 - Buggy cases: `10`
@@ -8,7 +8,7 @@
 - Buggy detection recall: `1.0`
 - Fixed non-trigger rate: `1.0`
 - Routing accuracy: `1.0`
-- Mean issue_match latency (ms): `78.116`
+- Mean issue_match latency (ms): `65.422`
 - Mean score uplift after feedback: `0.0141`
 
 ## Cases

@@ -24,7 +24,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Q-learning terminal target bootstraps after done=True",
             "variant_id": 1,
-            "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -43,7 +43,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "N-step return bootstraps beyond terminal transition",
             "variant_id": 3,
-            "verification_steps": "Run python EXAMPLES/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -62,7 +62,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "GAE recursion ignores terminal mask",
             "variant_id": 5,
-            "verification_steps": "Run python EXAMPLES/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -82,7 +82,7 @@
         "query_profile": {
           "entity_slots": {
             "anchor_file": "q_learning_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/q_learning_buggy.py"
+            "anchor_path": "examples/scenarios/q_learning_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -99,7 +99,7 @@
         "title": "Q-learning terminal target bootstraps after done=True"
       },
       "kind": "buggy",
-      "latency_ms": 62.517,
+      "latency_ms": 60.489,
       "mcp_match": {
         "decision": {
           "confidence": 0.828,
@@ -130,7 +130,7 @@
           "title": "Q-learning terminal target bootstraps after done=True",
           "validation_tier": "observed",
           "variant_id": 1,
-          "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+          "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -179,7 +179,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "DQN TD target leaks online-network values instead of detached target-network values",
             "variant_id": 2,
-            "verification_steps": "Run python EXAMPLES/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+            "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -198,7 +198,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Q-learning terminal target bootstraps after done=True",
             "variant_id": 1,
-            "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -217,7 +217,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Actor-critic policy update uses returns instead of advantages",
             "variant_id": 6,
-            "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -238,7 +238,7 @@
           "entity_slots": {
             "algo_name": "dqn",
             "anchor_file": "dqn_target_network_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/dqn_target_network_buggy.py"
+            "anchor_path": "examples/scenarios/dqn_target_network_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -255,7 +255,7 @@
         "title": "DQN TD target leaks online-network values instead of detached target-network values"
       },
       "kind": "buggy",
-      "latency_ms": 92.714,
+      "latency_ms": 72.529,
       "mcp_match": {
         "decision": {
           "confidence": 0.906,
@@ -286,7 +286,7 @@
           "title": "DQN TD target leaks online-network values instead of detached target-network values",
           "validation_tier": "observed",
           "variant_id": 2,
-          "verification_steps": "Run python EXAMPLES/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+          "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -335,7 +335,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "N-step return bootstraps beyond terminal transition",
             "variant_id": 3,
-            "verification_steps": "Run python EXAMPLES/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -354,7 +354,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Q-learning terminal target bootstraps after done=True",
             "variant_id": 1,
-            "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -373,7 +373,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "DQN TD target leaks online-network values instead of detached target-network values",
             "variant_id": 2,
-            "verification_steps": "Run python EXAMPLES/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+            "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -393,7 +393,7 @@
         "query_profile": {
           "entity_slots": {
             "anchor_file": "n_step_return_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/n_step_return_buggy.py"
+            "anchor_path": "examples/scenarios/n_step_return_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -410,7 +410,7 @@
         "title": "N-step return bootstraps beyond terminal transition"
       },
       "kind": "buggy",
-      "latency_ms": 90.469,
+      "latency_ms": 66.693,
       "mcp_match": {
         "decision": {
           "confidence": 0.872,
@@ -441,7 +441,7 @@
           "title": "N-step return bootstraps beyond terminal transition",
           "validation_tier": "observed",
           "variant_id": 3,
-          "verification_steps": "Run python EXAMPLES/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+          "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -490,7 +490,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "PPO clipped surrogate uses max instead of min",
             "variant_id": 4,
-            "verification_steps": "Run python EXAMPLES/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
+            "verification_steps": "Run python examples/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
             "why": [
               "same-error-family",
               "rl-problem-family:policy_gradient",
@@ -509,7 +509,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "GAE recursion ignores terminal mask",
             "variant_id": 5,
-            "verification_steps": "Run python EXAMPLES/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
             "why": [
               "same-error-family",
               "rl-algorithm-family:ppo",
@@ -528,7 +528,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Off-policy correction omits clipped importance weights",
             "variant_id": 10,
-            "verification_steps": "Run python EXAMPLES/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+            "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
             "why": [
               "same-error-family",
               "rl-problem-family:policy_gradient",
@@ -549,7 +549,7 @@
           "entity_slots": {
             "algo_name": "ppo",
             "anchor_file": "ppo_clip_objective_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/ppo_clip_objective_buggy.py"
+            "anchor_path": "examples/scenarios/ppo_clip_objective_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -566,7 +566,7 @@
         "title": "PPO clipped surrogate uses max instead of min"
       },
       "kind": "buggy",
-      "latency_ms": 80.667,
+      "latency_ms": 62.381,
       "mcp_match": {
         "decision": {
           "confidence": 0.999,
@@ -598,7 +598,7 @@
           "title": "PPO clipped surrogate uses max instead of min",
           "validation_tier": "observed",
           "variant_id": 4,
-          "verification_steps": "Run python EXAMPLES/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
+          "verification_steps": "Run python examples/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -647,7 +647,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "GAE recursion ignores terminal mask",
             "variant_id": 5,
-            "verification_steps": "Run python EXAMPLES/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -666,7 +666,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "N-step return bootstraps beyond terminal transition",
             "variant_id": 3,
-            "verification_steps": "Run python EXAMPLES/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -685,7 +685,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Q-learning terminal target bootstraps after done=True",
             "variant_id": 1,
-            "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -705,7 +705,7 @@
         "query_profile": {
           "entity_slots": {
             "anchor_file": "gae_terminal_mask_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/gae_terminal_mask_buggy.py"
+            "anchor_path": "examples/scenarios/gae_terminal_mask_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -722,7 +722,7 @@
         "title": "GAE recursion ignores terminal mask"
       },
       "kind": "buggy",
-      "latency_ms": 79.682,
+      "latency_ms": 68.802,
       "mcp_match": {
         "decision": {
           "confidence": 0.862,
@@ -754,7 +754,7 @@
           "title": "GAE recursion ignores terminal mask",
           "validation_tier": "observed",
           "variant_id": 5,
-          "verification_steps": "Run python EXAMPLES/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+          "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -803,7 +803,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Actor-critic policy update uses returns instead of advantages",
             "variant_id": 6,
-            "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -822,7 +822,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 actor update ignores delayed policy schedule",
             "variant_id": 9,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -841,7 +841,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 target policy smoothing misses action clipping",
             "variant_id": 8,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -861,7 +861,7 @@
         "query_profile": {
           "entity_slots": {
             "anchor_file": "actor_critic_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/actor_critic_buggy.py"
+            "anchor_path": "examples/scenarios/actor_critic_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -878,7 +878,7 @@
         "title": "Actor-critic policy update uses returns instead of advantages"
       },
       "kind": "buggy",
-      "latency_ms": 81.013,
+      "latency_ms": 68.501,
       "mcp_match": {
         "decision": {
           "confidence": 0.99,
@@ -910,7 +910,7 @@
           "title": "Actor-critic policy update uses returns instead of advantages",
           "validation_tier": "observed",
           "variant_id": 6,
-          "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+          "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -959,7 +959,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "SAC temperature update uses the wrong entropy residual sign",
             "variant_id": 7,
-            "verification_steps": "Run python EXAMPLES/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+            "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -978,7 +978,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Actor-critic policy update uses returns instead of advantages",
             "variant_id": 6,
-            "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -997,7 +997,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 actor update ignores delayed policy schedule",
             "variant_id": 9,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1018,7 +1018,7 @@
           "entity_slots": {
             "algo_name": "sac",
             "anchor_file": "sac_alpha_sign_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/sac_alpha_sign_buggy.py"
+            "anchor_path": "examples/scenarios/sac_alpha_sign_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -1035,7 +1035,7 @@
         "title": "SAC temperature update uses the wrong entropy residual sign"
       },
       "kind": "buggy",
-      "latency_ms": 70.77,
+      "latency_ms": 64.926,
       "mcp_match": {
         "decision": {
           "confidence": 0.999,
@@ -1067,7 +1067,7 @@
           "title": "SAC temperature update uses the wrong entropy residual sign",
           "validation_tier": "observed",
           "variant_id": 7,
-          "verification_steps": "Run python EXAMPLES/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+          "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -1116,7 +1116,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 target policy smoothing misses action clipping",
             "variant_id": 8,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1135,7 +1135,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 actor update ignores delayed policy schedule",
             "variant_id": 9,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1154,7 +1154,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Actor-critic policy update uses returns instead of advantages",
             "variant_id": 6,
-            "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1175,7 +1175,7 @@
           "entity_slots": {
             "algo_name": "td3",
             "anchor_file": "td3_target_smoothing_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/td3_target_smoothing_buggy.py"
+            "anchor_path": "examples/scenarios/td3_target_smoothing_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -1192,7 +1192,7 @@
         "title": "TD3 target policy smoothing misses action clipping"
       },
       "kind": "buggy",
-      "latency_ms": 70.085,
+      "latency_ms": 58.235,
       "mcp_match": {
         "decision": {
           "confidence": 0.999,
@@ -1224,7 +1224,7 @@
           "title": "TD3 target policy smoothing misses action clipping",
           "validation_tier": "observed",
           "variant_id": 8,
-          "verification_steps": "Run python EXAMPLES/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+          "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -1273,7 +1273,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 actor update ignores delayed policy schedule",
             "variant_id": 9,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1292,7 +1292,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "TD3 target policy smoothing misses action clipping",
             "variant_id": 8,
-            "verification_steps": "Run python EXAMPLES/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1311,7 +1311,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Actor-critic policy update uses returns instead of advantages",
             "variant_id": 6,
-            "verification_steps": "Run python EXAMPLES/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
             "why": [
               "same-error-family",
               "rl-problem-family:actor_critic",
@@ -1332,7 +1332,7 @@
           "entity_slots": {
             "algo_name": "td3",
             "anchor_file": "td3_policy_delay_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/td3_policy_delay_buggy.py"
+            "anchor_path": "examples/scenarios/td3_policy_delay_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -1349,7 +1349,7 @@
         "title": "TD3 actor update ignores delayed policy schedule"
       },
       "kind": "buggy",
-      "latency_ms": 66.681,
+      "latency_ms": 58.8,
       "mcp_match": {
         "decision": {
           "confidence": 0.999,
@@ -1381,7 +1381,7 @@
           "title": "TD3 actor update ignores delayed policy schedule",
           "validation_tier": "observed",
           "variant_id": 9,
-          "verification_steps": "Run python EXAMPLES/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+          "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -1430,7 +1430,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Off-policy correction omits clipped importance weights",
             "variant_id": 10,
-            "verification_steps": "Run python EXAMPLES/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+            "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -1449,7 +1449,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "Q-learning terminal target bootstraps after done=True",
             "variant_id": 1,
-            "verification_steps": "Run python EXAMPLES/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -1468,7 +1468,7 @@
             "strategy_key": "general_reusable_fix",
             "title": "SAC temperature update uses the wrong entropy residual sign",
             "variant_id": 7,
-            "verification_steps": "Run python EXAMPLES/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+            "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
             "why": [
               "same-error-family",
               "dense-retrieval",
@@ -1488,7 +1488,7 @@
         "query_profile": {
           "entity_slots": {
             "anchor_file": "vtrace_importance_weights_buggy.py",
-            "anchor_path": "EXAMPLES/scenarios/vtrace_importance_weights_buggy.py"
+            "anchor_path": "examples/scenarios/vtrace_importance_weights_buggy.py"
           },
           "error_family": "test_assertion_failure",
           "project_scope": "examples-rl-hard-bug-routing",
@@ -1505,7 +1505,7 @@
         "title": "Off-policy correction omits clipped importance weights"
       },
       "kind": "buggy",
-      "latency_ms": 86.56,
+      "latency_ms": 72.866,
       "mcp_match": {
         "decision": {
           "confidence": 0.875,
@@ -1537,7 +1537,7 @@
           "title": "Off-policy correction omits clipped importance weights",
           "validation_tier": "observed",
           "variant_id": 10,
-          "verification_steps": "Run python EXAMPLES/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+          "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
           "why": [
             "variant-first-candidate",
             "same-error-family",
@@ -1587,7 +1587,7 @@
       "scenario_title": "Fixed actor-critic advantage usage"
     }
   ],
-  "generated_at": "2026-04-02T21:55:08+00:00",
+  "generated_at": "2026-04-02T22:37:33+00:00",
   "seeded_patterns": {
     "actor_critic_bug": 6,
     "dqn_target_network_bug": 2,
@@ -1605,7 +1605,7 @@
     "buggy_detection_recall": 1.0,
     "fixed_cases": 2,
     "fixed_non_trigger_rate": 1.0,
-    "mean_issue_match_latency_ms": 78.116,
+    "mean_issue_match_latency_ms": 65.422,
     "mean_score_uplift_after_feedback": 0.0141,
     "passed_cases": 12,
     "routing_accuracy": 1.0,

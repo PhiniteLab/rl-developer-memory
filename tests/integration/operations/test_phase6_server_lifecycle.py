@@ -90,7 +90,7 @@ class ServerLifecycleTests(unittest.TestCase):
     def test_two_slot_cap_allows_two_processes_and_rejects_third(self) -> None:
         os.environ["RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES"] = "2"
-        repo_src = str(Path(__file__).resolve().parents[1] / "src")
+        repo_src = str(Path(__file__).resolve().parents[3] / "src")
         child_code = (
             "import signal, sys, time\n"
             "from rl_developer_memory.lifecycle import MCPServerLifecycle, MCPServerOwnerConflict\n"
@@ -159,7 +159,7 @@ class ServerLifecycleTests(unittest.TestCase):
         os.environ["RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY"] = "1"
-        repo_src = str(Path(__file__).resolve().parents[1] / "src")
+        repo_src = str(Path(__file__).resolve().parents[3] / "src")
         child_code = (
             "import signal, sys, time\n"
             "from rl_developer_memory.lifecycle import MCPServerLifecycle, MCPServerOwnerConflict\n"
@@ -250,13 +250,13 @@ class ServerLifecycleTests(unittest.TestCase):
         os.environ["RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY"] = "1"
-        repo_src = str(Path(__file__).resolve().parents[1] / "src")
+        repo_src = str(Path(__file__).resolve().parents[3] / "src")
         env = os.environ.copy()
         env["PYTHONPATH"] = repo_src + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
         proc = subprocess.run(
             [sys.executable, "-m", "rl_developer_memory.server"],
             env=env,
-            cwd=Path(__file__).resolve().parents[1],
+            cwd=Path(__file__).resolve().parents[3],
             capture_output=True,
             text=True,
             check=False,
@@ -296,7 +296,7 @@ class ServerLifecycleTests(unittest.TestCase):
             payload: dict[str, object] = {
                 "id": thread_id,
                 "timestamp": "2026-03-29T00:00:00Z",
-                "cwd": str(Path(__file__).resolve().parents[1]),
+                "cwd": str(Path(__file__).resolve().parents[3]),
                 "originator": "codex_vscode",
                 "cli_version": "test",
                 "source": "vscode",
@@ -335,7 +335,7 @@ class ServerLifecycleTests(unittest.TestCase):
             payload: dict[str, object] = {
                 "id": thread_id,
                 "timestamp": "2026-03-29T00:00:00Z",
-                "cwd": str(Path(__file__).resolve().parents[1]),
+                "cwd": str(Path(__file__).resolve().parents[3]),
                 "originator": "codex_vscode",
                 "cli_version": "test",
                 "source": "vscode",
@@ -379,7 +379,7 @@ class ServerLifecycleTests(unittest.TestCase):
             payload: dict[str, object] = {
                 "id": thread_id,
                 "timestamp": "2026-03-29T00:00:00Z",
-                "cwd": str(Path(__file__).resolve().parents[1]),
+                "cwd": str(Path(__file__).resolve().parents[3]),
                 "originator": "codex_vscode",
                 "cli_version": "test",
                 "source": "vscode",
@@ -408,7 +408,7 @@ class ServerLifecycleTests(unittest.TestCase):
         write_session(main_b)
         write_session(subagent_a, forked_from_id=main_a, parent_thread_id=main_a)
 
-        repo_src = str(Path(__file__).resolve().parents[1] / "src")
+        repo_src = str(Path(__file__).resolve().parents[3] / "src")
         child_code = (
             "import signal, sys, time\n"
             "from rl_developer_memory.lifecycle import MCPServerLifecycle, MCPServerOwnerConflict\n"

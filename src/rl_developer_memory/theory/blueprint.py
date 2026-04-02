@@ -381,7 +381,7 @@ def _build_artifact_expectations() -> tuple[ArtifactExpectationSpec, ...]:
         ArtifactExpectationSpec(
             artifact_id="theory_mapping_doc",
             kind="theory_mapping_doc",
-            producer_anchor="docs/theory_to_code.md",
+            producer_anchor="docs/THEORY_TO_CODE.md",
             validator_anchor="rl_developer_memory.theory.sync.validate_theorem_code_sync",
         ),
         ArtifactExpectationSpec(

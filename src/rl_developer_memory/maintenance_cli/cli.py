@@ -1,12 +1,6 @@
-"""Public maintenance module façade.
+"""Compatibility façade for the maintenance CLI package."""
 
-This keeps the stable import/entrypoint surface:
-- python -m rl_developer_memory.maintenance
-- rl_developer_memory.maintenance:main
-"""
-
-from .maintenance_cli.cli import (
-    build_parser,
+from .commands import (
     cmd_backup,
     cmd_benchmark_dense_bandit,
     cmd_benchmark_failure_taxonomy,
@@ -35,8 +29,8 @@ from .maintenance_cli.cli import (
     cmd_smoke,
     cmd_smoke_learning,
     cmd_verify_backup,
-    main,
 )
+from .parser import build_parser, main
 
 __all__ = [
     "build_parser",
@@ -70,7 +64,3 @@ __all__ = [
     "cmd_smoke_learning",
     "cmd_verify_backup",
 ]
-
-
-if __name__ == "__main__":
-    main()

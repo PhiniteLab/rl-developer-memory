@@ -1,29 +1,32 @@
 # Dependencies
 
-## Required runtime dependency
+The canonical dependency source for this repository is [`pyproject.toml`](../pyproject.toml).
+Use this page as a quick reference, not as a second package manifest.
 
-The project has a deliberately small runtime dependency surface.
+## Runtime dependencies
 
-Required package dependency:
+Installed automatically with `python -m pip install -e .`:
+
 - `mcp[cli]>=1.0.0,<2.0.0`
+- `tomli>=2.0.1` on Python `<3.11`
 
 ## Development dependencies
 
-Installed through `.[dev]`:
-- `pytest`
-- `pyright`
-- `ruff`
+Installed with `python -m pip install -e .[dev]`:
 
-## Optional environment dependencies
+- `pytest>=8.0.0`
+- `pyright>=1.1.380`
+- `ruff>=0.6.0`
+- `build>=1.2.2`
+
+## External tools
 
 Depending on workflow, you may also need:
-- `crontab` support for scheduled backups
-- standard Linux/WSL shell tooling
-- Codex for live MCP registration and use
+- `git`
+- `python3` with `venv`
+- `bash`
+- `rsync` (optional for installer copy behavior)
+- `cron` / `crontab` (optional for scheduled backups)
+- Codex (optional for live MCP registration)
 
-## Dependency posture
-
-Project goals:
-- keep runtime dependencies minimal
-- avoid turning the package into a large framework bundle
-- prefer local scripts and explicit operational surfaces over hidden services
+For install examples and first-run verification, use [INSTALLATION.md](INSTALLATION.md).
