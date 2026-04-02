@@ -1,0 +1,54 @@
+schema_version: 1
+name: rl-developer-workflow
+display_name: RL Developer Workflow
+description: Selective expert workflow for RL/control engineering, theorem-to-code alignment, validation-first delivery, rollout posture, and MCP-aware guidance.
+family: rl_engineering
+primary_role: orchestrated_builder
+companions:
+  - rl-developer-memory-self-learning
+  - python-quality-gate
+  - core-repo-audit
+implicit_policy:
+  allow_implicit_invocation: true
+  safe_auto_invoke: true
+validation:
+  depth: deep
+output_contract:
+  require_evidence: true
+  require_assumption_split: true
+  validation_status_labels: true
+sections:
+  optional:
+    - Trigger criteria
+    - Non-trigger criteria
+    - Task classification logic
+    - Theory / assumptions / validation obligations
+    - Delivery format
+trigger_examples:
+  positive:
+    - Design a PPO/SAC-ready RL backbone with theorem-to-code and rollout validation.
+    - Audit an actor-critic/control change for Bellman, HJB, Lyapunov, and seed-discipline consistency.
+    - Build or harden RL experiment orchestration, diagnostics, checkpointing, and MCP-aware workflow.
+  negative:
+    - Casual chat about reinforcement learning with no repo or implementation task.
+    - Generic text editing where RL is only mentioned incidentally.
+routing:
+  stage: plan
+  trigger_priority: 93
+  primary_triggers:
+    - rl algorithm development
+    - theorem-to-code
+    - rl control integration
+    - rollout or reproducibility hardening
+  must_not_trigger_when:
+    - casual conversation
+    - nontechnical RL mention
+    - simple text rewrite
+  preferred_over:
+    - rl-developer-memory-self-learning
+  fallback_to:
+    - core-repo-audit
+    - python-quality-gate
+  max_companions: 2
+references:
+  implementation_kit: docs/SKILL_INSTALL_SYNC.md

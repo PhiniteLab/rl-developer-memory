@@ -1,0 +1,27 @@
+{
+  "name": "rl-developer-memory",
+  "version": "0.1.0",
+  "description": "Local-first RL/control developer workflow bundle for Codex with MCP-backed memory, validation, and operational tooling.",
+  "author": {
+    "name": "Mehmet"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "mcp",
+    "rl-developer-memory",
+    "debugging",
+    "sqlite",
+    "reinforcement-learning",
+    "theorem-to-code"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "rl-developer-memory",
+    "shortDescription": "RL-aware Codex bundle with theorem-to-code workflow guidance, validation discipline, and MCP-backed memory controls.",
+    "longDescription": "rl-developer-memory combines local SQLite-backed RL/control memory retrieval with broader Codex workflow guidance for theorem-to-code alignment, validation-first delivery, rollout posture, preference/guardrail workflows, and reliable daily experimentation.",
+    "developerName": "Mehmet",
+    "category": "Productivity"
+  }
+}

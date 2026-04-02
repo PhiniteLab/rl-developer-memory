@@ -1,0 +1,1634 @@
+{
+  "cases": [
+    {
+      "case_id": "q_learning_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: Q-learning target bootstraps through terminal state; expected reward-only target when done=True.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+            "pattern_id": 1,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+            "score": 0.852,
+            "strategy_key": "general_reusable_fix",
+            "title": "Q-learning terminal target bootstraps after done=True",
+            "variant_id": 1,
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match",
+              "variant-command-match",
+              "variant-path-match"
+            ]
+          },
+          {
+            "canonical_fix": "Apply the done mask inside the n-step recursion so the bootstrap tail is zeroed after the first terminal transition.",
+            "pattern_id": 3,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Every multi-step target should explicitly stop recursion when a terminal flag appears inside the rollout window.",
+            "score": 0.448,
+            "strategy_key": "general_reusable_fix",
+            "title": "N-step return bootstraps beyond terminal transition",
+            "variant_id": 3,
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          },
+          {
+            "canonical_fix": "Multiply both next-value and recursive advantage terms by the terminal mask before propagating GAE.",
+            "pattern_id": 5,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Check GAE with terminal transitions explicitly and verify no next-state value leaks across episode boundaries.",
+            "score": 0.442,
+            "strategy_key": "general_reusable_fix",
+            "title": "GAE recursion ignores terminal mask",
+            "variant_id": 5,
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "anchor_file": "q_learning_buggy.py",
+            "anchor_path": "examples/scenarios/q_learning_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+        "found": true,
+        "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+        "title": "Q-learning terminal target bootstraps after done=True"
+      },
+      "kind": "buggy",
+      "latency_ms": 60.489,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.828,
+          "gap": 0.394,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.434,
+          "status": "match",
+          "top_score": 0.828
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 1,
+        "top_match": {
+          "candidate_rank": 1,
+          "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 1,
+          "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+          "problem_family": "bellman_dp",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 1,
+          "root_cause_class": "terminal_bootstrap_leak",
+          "runtime_stage": "train",
+          "score": 0.828,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "Q-learning terminal target bootstraps after done=True",
+          "validation_tier": "observed",
+          "variant_id": 1,
+          "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-problem-family:bellman_dp",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:assertionerror,bellman,bootstrap,bootstraps"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy Q-learning terminal bootstrap",
+      "score_after_feedback": 0.855,
+      "score_before_feedback": 0.828,
+      "score_uplift_after_feedback": 0.027
+    },
+    {
+      "case_id": "dqn_target_network_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: DQN target uses online-network bootstrap value instead of detached target-network value.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Select the greedy action with the online network if desired, but evaluate the bootstrap value with the detached target-network outputs.",
+            "pattern_id": 2,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep online-network action selection and target-network bootstrap evaluation separated in DQN-style updates.",
+            "score": 0.902,
+            "strategy_key": "general_reusable_fix",
+            "title": "DQN TD target leaks online-network values instead of detached target-network values",
+            "variant_id": 2,
+            "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match",
+              "variant-command-match",
+              "variant-path-match"
+            ]
+          },
+          {
+            "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+            "pattern_id": 1,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+            "score": 0.465,
+            "strategy_key": "general_reusable_fix",
+            "title": "Q-learning terminal target bootstraps after done=True",
+            "variant_id": 1,
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          },
+          {
+            "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+            "pattern_id": 6,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+            "score": 0.442,
+            "strategy_key": "general_reusable_fix",
+            "title": "Actor-critic policy update uses returns instead of advantages",
+            "variant_id": 6,
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "algo_name": "dqn",
+            "anchor_file": "dqn_target_network_buggy.py",
+            "anchor_path": "examples/scenarios/dqn_target_network_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Select the greedy action with the online network if desired, but evaluate the bootstrap value with the detached target-network outputs.",
+        "found": true,
+        "prevention_rule": "Keep online-network action selection and target-network bootstrap evaluation separated in DQN-style updates.",
+        "title": "DQN TD target leaks online-network values instead of detached target-network values"
+      },
+      "kind": "buggy",
+      "latency_ms": 72.529,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.906,
+          "gap": 0.443,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.462,
+          "status": "match",
+          "top_score": 0.906
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 3,
+        "top_match": {
+          "candidate_rank": 1,
+          "canonical_fix": "Select the greedy action with the online network if desired, but evaluate the bootstrap value with the detached target-network outputs.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 2,
+          "prevention_rule": "Keep online-network action selection and target-network bootstrap evaluation separated in DQN-style updates.",
+          "problem_family": "bellman_dp",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 19,
+          "root_cause_class": "target_network_misconfiguration",
+          "runtime_stage": "train",
+          "score": 0.906,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "DQN TD target leaks online-network values instead of detached target-network values",
+          "validation_tier": "observed",
+          "variant_id": 2,
+          "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:assertionerror,bootstrap,detached,dqn",
+            "tag-overlap:assertionerror,testing"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy DQN target-network leakage",
+      "score_after_feedback": 0.932,
+      "score_before_feedback": 0.906,
+      "score_uplift_after_feedback": 0.026
+    },
+    {
+      "case_id": "n_step_return_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: N-step return bootstraps past a terminal transition; expected terminal mask to stop recursion.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Apply the done mask inside the n-step recursion so the bootstrap tail is zeroed after the first terminal transition.",
+            "pattern_id": 3,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Every multi-step target should explicitly stop recursion when a terminal flag appears inside the rollout window.",
+            "score": 0.86,
+            "strategy_key": "general_reusable_fix",
+            "title": "N-step return bootstraps beyond terminal transition",
+            "variant_id": 3,
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match",
+              "variant-command-match",
+              "variant-path-match"
+            ]
+          },
+          {
+            "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+            "pattern_id": 1,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+            "score": 0.491,
+            "strategy_key": "general_reusable_fix",
+            "title": "Q-learning terminal target bootstraps after done=True",
+            "variant_id": 1,
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          },
+          {
+            "canonical_fix": "Select the greedy action with the online network if desired, but evaluate the bootstrap value with the detached target-network outputs.",
+            "pattern_id": 2,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep online-network action selection and target-network bootstrap evaluation separated in DQN-style updates.",
+            "score": 0.455,
+            "strategy_key": "general_reusable_fix",
+            "title": "DQN TD target leaks online-network values instead of detached target-network values",
+            "variant_id": 2,
+            "verification_steps": "Run python examples/scenarios/dqn_target_network_buggy.py and confirm the TD target uses target-network values.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "anchor_file": "n_step_return_buggy.py",
+            "anchor_path": "examples/scenarios/n_step_return_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Apply the done mask inside the n-step recursion so the bootstrap tail is zeroed after the first terminal transition.",
+        "found": true,
+        "prevention_rule": "Every multi-step target should explicitly stop recursion when a terminal flag appears inside the rollout window.",
+        "title": "N-step return bootstraps beyond terminal transition"
+      },
+      "kind": "buggy",
+      "latency_ms": 66.693,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.872,
+          "gap": 0.39,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.482,
+          "status": "match",
+          "top_score": 0.872
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 5,
+        "top_match": {
+          "candidate_rank": 1,
+          "canonical_fix": "Apply the done mask inside the n-step recursion so the bootstrap tail is zeroed after the first terminal transition.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 3,
+          "prevention_rule": "Every multi-step target should explicitly stop recursion when a terminal flag appears inside the rollout window.",
+          "problem_family": "bellman_dp",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 37,
+          "root_cause_class": "terminal_bootstrap_leak",
+          "runtime_stage": "train",
+          "score": 0.872,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "N-step return bootstraps beyond terminal transition",
+          "validation_tier": "observed",
+          "variant_id": 3,
+          "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:assertionerror,bootstrapping,bootstraps,examples",
+            "tag-overlap:assertionerror,testing"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy n-step return terminal masking",
+      "score_after_feedback": 0.898,
+      "score_before_feedback": 0.872,
+      "score_uplift_after_feedback": 0.026
+    },
+    {
+      "case_id": "ppo_clip_objective_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: PPO clipped objective uses max instead of min for positive advantages.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "For positive advantages, compute the PPO surrogate with the minimum of unclipped and clipped terms so the trust-region style clip is respected.",
+            "pattern_id": 4,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Unit-test PPO clipped objective branches separately for positive and negative advantages.",
+            "score": 0.999,
+            "strategy_key": "general_reusable_fix",
+            "title": "PPO clipped surrogate uses max instead of min",
+            "variant_id": 4,
+            "verification_steps": "Run python examples/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:policy_gradient",
+              "rl-algorithm-family:ppo",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match"
+            ]
+          },
+          {
+            "canonical_fix": "Multiply both next-value and recursive advantage terms by the terminal mask before propagating GAE.",
+            "pattern_id": 5,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Check GAE with terminal transitions explicitly and verify no next-state value leaks across episode boundaries.",
+            "score": 0.545,
+            "strategy_key": "general_reusable_fix",
+            "title": "GAE recursion ignores terminal mask",
+            "variant_id": 5,
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "why": [
+              "same-error-family",
+              "rl-algorithm-family:ppo",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          },
+          {
+            "canonical_fix": "Multiply the off-policy actor correction term by the clipped importance weights before applying the update.",
+            "pattern_id": 10,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Unit-test off-policy actor corrections with rho values below 1 so clipped-importance behavior is exercised.",
+            "score": 0.492,
+            "strategy_key": "general_reusable_fix",
+            "title": "Off-policy correction omits clipped importance weights",
+            "variant_id": 10,
+            "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:policy_gradient",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "algo_name": "ppo",
+            "anchor_file": "ppo_clip_objective_buggy.py",
+            "anchor_path": "examples/scenarios/ppo_clip_objective_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "For positive advantages, compute the PPO surrogate with the minimum of unclipped and clipped terms so the trust-region style clip is respected.",
+        "found": true,
+        "prevention_rule": "Unit-test PPO clipped objective branches separately for positive and negative advantages.",
+        "title": "PPO clipped surrogate uses max instead of min"
+      },
+      "kind": "buggy",
+      "latency_ms": 62.381,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.999,
+          "gap": 0.456,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.543,
+          "status": "match",
+          "top_score": 0.999
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 7,
+        "top_match": {
+          "algorithm_family": "ppo",
+          "candidate_rank": 1,
+          "canonical_fix": "For positive advantages, compute the PPO surrogate with the minimum of unclipped and clipped terms so the trust-region style clip is respected.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 4,
+          "prevention_rule": "Unit-test PPO clipped objective branches separately for positive and negative advantages.",
+          "problem_family": "policy_gradient",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 55,
+          "root_cause_class": "actor_objective_misimplementation",
+          "runtime_stage": "train",
+          "score": 0.999,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "PPO clipped surrogate uses max instead of min",
+          "validation_tier": "observed",
+          "variant_id": 4,
+          "verification_steps": "Run python examples/scenarios/ppo_clip_objective_buggy.py and confirm the clipped branch caps the objective.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-problem-family:policy_gradient",
+            "rl-algorithm-family:ppo",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy PPO clipped surrogate",
+      "score_after_feedback": 0.999,
+      "score_before_feedback": 0.999,
+      "score_uplift_after_feedback": 0.0
+    },
+    {
+      "case_id": "gae_terminal_mask_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: GAE recursion propagates advantage across terminal boundary because done mask is ignored.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Multiply both next-value and recursive advantage terms by the terminal mask before propagating GAE.",
+            "pattern_id": 5,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Check GAE with terminal transitions explicitly and verify no next-state value leaks across episode boundaries.",
+            "score": 0.868,
+            "strategy_key": "general_reusable_fix",
+            "title": "GAE recursion ignores terminal mask",
+            "variant_id": 5,
+            "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match",
+              "variant-command-match",
+              "variant-path-match"
+            ]
+          },
+          {
+            "canonical_fix": "Apply the done mask inside the n-step recursion so the bootstrap tail is zeroed after the first terminal transition.",
+            "pattern_id": 3,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Every multi-step target should explicitly stop recursion when a terminal flag appears inside the rollout window.",
+            "score": 0.484,
+            "strategy_key": "general_reusable_fix",
+            "title": "N-step return bootstraps beyond terminal transition",
+            "variant_id": 3,
+            "verification_steps": "Run python examples/scenarios/n_step_return_buggy.py and confirm the terminal step removes the bootstrap tail.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          },
+          {
+            "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+            "pattern_id": 1,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+            "score": 0.479,
+            "strategy_key": "general_reusable_fix",
+            "title": "Q-learning terminal target bootstraps after done=True",
+            "variant_id": 1,
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "anchor_file": "gae_terminal_mask_buggy.py",
+            "anchor_path": "examples/scenarios/gae_terminal_mask_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Multiply both next-value and recursive advantage terms by the terminal mask before propagating GAE.",
+        "found": true,
+        "prevention_rule": "Check GAE with terminal transitions explicitly and verify no next-state value leaks across episode boundaries.",
+        "title": "GAE recursion ignores terminal mask"
+      },
+      "kind": "buggy",
+      "latency_ms": 68.802,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.862,
+          "gap": 0.391,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.471,
+          "status": "match",
+          "top_score": 0.862
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 9,
+        "top_match": {
+          "algorithm_family": "ppo",
+          "candidate_rank": 1,
+          "canonical_fix": "Multiply both next-value and recursive advantage terms by the terminal mask before propagating GAE.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 5,
+          "prevention_rule": "Check GAE with terminal transitions explicitly and verify no next-state value leaks across episode boundaries.",
+          "problem_family": "actor_critic",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 73,
+          "root_cause_class": "advantage_estimator_leak",
+          "runtime_stage": "train",
+          "score": 0.862,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "GAE recursion ignores terminal mask",
+          "validation_tier": "observed",
+          "variant_id": 5,
+          "verification_steps": "Run python examples/scenarios/gae_terminal_mask_buggy.py and confirm terminal transitions cut off the recursion.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:across,advantage,assertionerror,cut",
+            "tag-overlap:assertionerror,testing"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy GAE terminal masking",
+      "score_after_feedback": 0.888,
+      "score_before_feedback": 0.862,
+      "score_uplift_after_feedback": 0.026
+    },
+    {
+      "case_id": "actor_critic_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: Actor-critic policy loss is using returns instead of advantages; subtract critic values before policy update.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+            "pattern_id": 6,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+            "score": 0.999,
+            "strategy_key": "general_reusable_fix",
+            "title": "Actor-critic policy update uses returns instead of advantages",
+            "variant_id": 6,
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:actor_critic",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match"
+            ]
+          },
+          {
+            "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+            "pattern_id": 9,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+            "score": 0.582,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 actor update ignores delayed policy schedule",
+            "variant_id": 9,
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          },
+          {
+            "canonical_fix": "After adding TD3 smoothing noise, clip the target action back to the environment action bounds before computing critic targets.",
+            "pattern_id": 8,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Always test TD3 target actions at the edge of the action range with positive and negative smoothing noise.",
+            "score": 0.571,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 target policy smoothing misses action clipping",
+            "variant_id": 8,
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "anchor_file": "actor_critic_buggy.py",
+            "anchor_path": "examples/scenarios/actor_critic_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+        "found": true,
+        "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+        "title": "Actor-critic policy update uses returns instead of advantages"
+      },
+      "kind": "buggy",
+      "latency_ms": 68.501,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.99,
+          "gap": 0.361,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.629,
+          "status": "match",
+          "top_score": 0.99
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 11,
+        "top_match": {
+          "algorithm_family": "actor_critic",
+          "candidate_rank": 1,
+          "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 6,
+          "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+          "problem_family": "actor_critic",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 91,
+          "root_cause_class": "policy_loss_uses_returns",
+          "runtime_stage": "train",
+          "score": 0.99,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "Actor-critic policy update uses returns instead of advantages",
+          "validation_tier": "observed",
+          "variant_id": 6,
+          "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-algorithm-family:actor_critic",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:actor,actor-critic,advantages,assertionerror"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy actor-critic returns-vs-advantage",
+      "score_after_feedback": 0.999,
+      "score_before_feedback": 0.99,
+      "score_uplift_after_feedback": 0.009
+    },
+    {
+      "case_id": "sac_alpha_sign_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: SAC temperature update uses the wrong sign; expected target_entropy - observed_entropy.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Form the SAC temperature residual as target_entropy - observed_entropy so the alpha update moves in the correct exploration-restoring direction.",
+            "pattern_id": 7,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Unit-test SAC alpha residual signs with both entropy-above-target and entropy-below-target cases.",
+            "score": 0.999,
+            "strategy_key": "general_reusable_fix",
+            "title": "SAC temperature update uses the wrong entropy residual sign",
+            "variant_id": 7,
+            "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:sac",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match"
+            ]
+          },
+          {
+            "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+            "pattern_id": 6,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+            "score": 0.583,
+            "strategy_key": "general_reusable_fix",
+            "title": "Actor-critic policy update uses returns instead of advantages",
+            "variant_id": 6,
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          },
+          {
+            "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+            "pattern_id": 9,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+            "score": 0.507,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 actor update ignores delayed policy schedule",
+            "variant_id": 9,
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "algo_name": "sac",
+            "anchor_file": "sac_alpha_sign_buggy.py",
+            "anchor_path": "examples/scenarios/sac_alpha_sign_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Form the SAC temperature residual as target_entropy - observed_entropy so the alpha update moves in the correct exploration-restoring direction.",
+        "found": true,
+        "prevention_rule": "Unit-test SAC alpha residual signs with both entropy-above-target and entropy-below-target cases.",
+        "title": "SAC temperature update uses the wrong entropy residual sign"
+      },
+      "kind": "buggy",
+      "latency_ms": 64.926,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.999,
+          "gap": 0.416,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.583,
+          "status": "match",
+          "top_score": 0.999
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 13,
+        "top_match": {
+          "algorithm_family": "sac",
+          "candidate_rank": 1,
+          "canonical_fix": "Form the SAC temperature residual as target_entropy - observed_entropy so the alpha update moves in the correct exploration-restoring direction.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 7,
+          "prevention_rule": "Unit-test SAC alpha residual signs with both entropy-above-target and entropy-below-target cases.",
+          "problem_family": "actor_critic",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 109,
+          "root_cause_class": "entropy_temperature_sign_bug",
+          "runtime_stage": "train",
+          "score": 0.999,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "SAC temperature update uses the wrong entropy residual sign",
+          "validation_tier": "observed",
+          "variant_id": 7,
+          "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-problem-family:actor_critic",
+            "rl-algorithm-family:sac",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy SAC temperature sign",
+      "score_after_feedback": 0.999,
+      "score_before_feedback": 0.999,
+      "score_uplift_after_feedback": 0.0
+    },
+    {
+      "case_id": "td3_target_smoothing_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: TD3 target policy smoothing misses action clipping and exceeds action bounds.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "After adding TD3 smoothing noise, clip the target action back to the environment action bounds before computing critic targets.",
+            "pattern_id": 8,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Always test TD3 target actions at the edge of the action range with positive and negative smoothing noise.",
+            "score": 0.999,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 target policy smoothing misses action clipping",
+            "variant_id": 8,
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:td3",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match"
+            ]
+          },
+          {
+            "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+            "pattern_id": 9,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+            "score": 0.642,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 actor update ignores delayed policy schedule",
+            "variant_id": 9,
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:td3",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior"
+            ]
+          },
+          {
+            "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+            "pattern_id": 6,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+            "score": 0.587,
+            "strategy_key": "general_reusable_fix",
+            "title": "Actor-critic policy update uses returns instead of advantages",
+            "variant_id": 6,
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "algo_name": "td3",
+            "anchor_file": "td3_target_smoothing_buggy.py",
+            "anchor_path": "examples/scenarios/td3_target_smoothing_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "After adding TD3 smoothing noise, clip the target action back to the environment action bounds before computing critic targets.",
+        "found": true,
+        "prevention_rule": "Always test TD3 target actions at the edge of the action range with positive and negative smoothing noise.",
+        "title": "TD3 target policy smoothing misses action clipping"
+      },
+      "kind": "buggy",
+      "latency_ms": 58.235,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.999,
+          "gap": 0.338,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.661,
+          "status": "match",
+          "top_score": 0.999
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 15,
+        "top_match": {
+          "algorithm_family": "td3",
+          "candidate_rank": 1,
+          "canonical_fix": "After adding TD3 smoothing noise, clip the target action back to the environment action bounds before computing critic targets.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 8,
+          "prevention_rule": "Always test TD3 target actions at the edge of the action range with positive and negative smoothing noise.",
+          "problem_family": "actor_critic",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 127,
+          "root_cause_class": "action_scaling_mismatch",
+          "runtime_stage": "train",
+          "score": 0.999,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "TD3 target policy smoothing misses action clipping",
+          "validation_tier": "observed",
+          "variant_id": 8,
+          "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-problem-family:actor_critic",
+            "rl-algorithm-family:td3",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy TD3 target smoothing clip",
+      "score_after_feedback": 0.999,
+      "score_before_feedback": 0.999,
+      "score_uplift_after_feedback": 0.0
+    },
+    {
+      "case_id": "td3_policy_delay_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: TD3 actor update ignores policy_delay and runs on every critic step.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+            "pattern_id": 9,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+            "score": 0.999,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 actor update ignores delayed policy schedule",
+            "variant_id": 9,
+            "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:td3",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match"
+            ]
+          },
+          {
+            "canonical_fix": "After adding TD3 smoothing noise, clip the target action back to the environment action bounds before computing critic targets.",
+            "pattern_id": 8,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Always test TD3 target actions at the edge of the action range with positive and negative smoothing noise.",
+            "score": 0.645,
+            "strategy_key": "general_reusable_fix",
+            "title": "TD3 target policy smoothing misses action clipping",
+            "variant_id": 8,
+            "verification_steps": "Run python examples/scenarios/td3_target_smoothing_buggy.py and confirm the target action is clipped to bounds.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "rl-algorithm-family:td3",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior"
+            ]
+          },
+          {
+            "canonical_fix": "Compute policy loss from advantages (returns - critic values) instead of raw returns.",
+            "pattern_id": 6,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Keep actor and critic objectives separated: actor uses advantages, critic uses value targets.",
+            "score": 0.573,
+            "strategy_key": "general_reusable_fix",
+            "title": "Actor-critic policy update uses returns instead of advantages",
+            "variant_id": 6,
+            "verification_steps": "Run python examples/scenarios/actor_critic_buggy.py and confirm policy loss uses advantages.",
+            "why": [
+              "same-error-family",
+              "rl-problem-family:actor_critic",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "algo_name": "td3",
+            "anchor_file": "td3_policy_delay_buggy.py",
+            "anchor_path": "examples/scenarios/td3_policy_delay_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+        "found": true,
+        "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+        "title": "TD3 actor update ignores delayed policy schedule"
+      },
+      "kind": "buggy",
+      "latency_ms": 58.8,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.999,
+          "gap": 0.352,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.647,
+          "status": "match",
+          "top_score": 0.999
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 17,
+        "top_match": {
+          "algorithm_family": "td3",
+          "candidate_rank": 1,
+          "canonical_fix": "Gate the TD3 actor update with the configured policy_delay so the actor is updated only on delayed critic steps.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 9,
+          "prevention_rule": "Cover TD3 update scheduling with a simple step-index unit test before training runs.",
+          "problem_family": "actor_critic",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 145,
+          "root_cause_class": "delayed_policy_schedule_bug",
+          "runtime_stage": "train",
+          "score": 0.999,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "TD3 actor update ignores delayed policy schedule",
+          "validation_tier": "observed",
+          "variant_id": 9,
+          "verification_steps": "Run python examples/scenarios/td3_policy_delay_buggy.py and confirm odd critic steps skip the actor update when policy_delay=2.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "rl-problem-family:actor_critic",
+            "rl-algorithm-family:td3",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy TD3 policy-delay schedule",
+      "score_after_feedback": 0.999,
+      "score_before_feedback": 0.999,
+      "score_uplift_after_feedback": 0.0
+    },
+    {
+      "case_id": "vtrace_importance_weight_bug",
+      "failure": {
+        "error_excerpt": "AssertionError: Off-policy correction omits clipped importance weights in the actor update.",
+        "failed": true,
+        "returncode": 1
+      },
+      "feedback": {
+        "confidence_after": 0.94,
+        "confidence_before": 0.78,
+        "feedback_type": "fix_verified",
+        "global_update_applied": true
+      },
+      "guardrails": {
+        "guardrails": [
+          {
+            "canonical_fix": "Multiply the off-policy actor correction term by the clipped importance weights before applying the update.",
+            "pattern_id": 10,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Unit-test off-policy actor corrections with rho values below 1 so clipped-importance behavior is exercised.",
+            "score": 0.879,
+            "strategy_key": "general_reusable_fix",
+            "title": "Off-policy correction omits clipped importance weights",
+            "variant_id": 10,
+            "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "context-variant-match",
+              "variant-stack-match",
+              "variant-command-match",
+              "variant-path-match"
+            ]
+          },
+          {
+            "canonical_fix": "Mask the Bellman bootstrap with (1 - done) so terminal transitions only use the immediate reward.",
+            "pattern_id": 1,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Whenever a Q-learning target is computed, zero the next-state bootstrap term when done=True.",
+            "score": 0.456,
+            "strategy_key": "general_reusable_fix",
+            "title": "Q-learning terminal target bootstraps after done=True",
+            "variant_id": 1,
+            "verification_steps": "Run python examples/scenarios/q_learning_buggy.py and confirm terminal targets equal reward.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          },
+          {
+            "canonical_fix": "Form the SAC temperature residual as target_entropy - observed_entropy so the alpha update moves in the correct exploration-restoring direction.",
+            "pattern_id": 7,
+            "preference_alignment": 0.0,
+            "prevention_rule": "Unit-test SAC alpha residual signs with both entropy-above-target and entropy-below-target cases.",
+            "score": 0.453,
+            "strategy_key": "general_reusable_fix",
+            "title": "SAC temperature update uses the wrong entropy residual sign",
+            "variant_id": 7,
+            "verification_steps": "Run python examples/scenarios/sac_alpha_sign_buggy.py and confirm the residual matches target_entropy - observed_entropy.",
+            "why": [
+              "same-error-family",
+              "dense-retrieval",
+              "retrieval-signal",
+              "feedback-prior",
+              "prior-success",
+              "same-project-scope"
+            ]
+          }
+        ],
+        "next_action": "Apply the listed prevention rules and preferred strategies before editing. When a concrete failure appears, call issue_match to retrieve the exact stored fix.",
+        "preferences": {
+          "avoided_strategies": [],
+          "matched_rules": [],
+          "preferred_strategies": []
+        },
+        "query_profile": {
+          "entity_slots": {
+            "anchor_file": "vtrace_importance_weights_buggy.py",
+            "anchor_path": "examples/scenarios/vtrace_importance_weights_buggy.py"
+          },
+          "error_family": "test_assertion_failure",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "repo_name": "",
+          "root_cause_class": "assertion_contract_violation",
+          "strategy_hints": [],
+          "user_scope": ""
+        }
+      },
+      "issue_get": {
+        "canonical_fix": "Multiply the off-policy actor correction term by the clipped importance weights before applying the update.",
+        "found": true,
+        "prevention_rule": "Unit-test off-policy actor corrections with rho values below 1 so clipped-importance behavior is exercised.",
+        "title": "Off-policy correction omits clipped importance weights"
+      },
+      "kind": "buggy",
+      "latency_ms": 72.866,
+      "mcp_match": {
+        "decision": {
+          "confidence": 0.875,
+          "gap": 0.42,
+          "reason": "top-candidate-clearly-ahead",
+          "second_score": 0.456,
+          "status": "match",
+          "top_score": 0.875
+        },
+        "next_action": "Inspect the top match first. Call issue_get if you need stored variants, episodes, or full verification steps. After trying the suggested fix, call issue_feedback so the memory can learn from the outcome.",
+        "retrieval_event_id": 19,
+        "top_match": {
+          "algorithm_family": "actor_critic",
+          "candidate_rank": 1,
+          "canonical_fix": "Multiply the off-policy actor correction term by the clipped importance weights before applying the update.",
+          "domain": "rl_control",
+          "error_family": "test_assertion_failure",
+          "memory_kind": "failure_pattern",
+          "pattern_id": 10,
+          "prevention_rule": "Unit-test off-policy actor corrections with rho values below 1 so clipped-importance behavior is exercised.",
+          "problem_family": "policy_gradient",
+          "project_scope": "examples-rl-hard-bug-routing",
+          "retrieval_candidate_id": 163,
+          "root_cause_class": "importance_weight_omission",
+          "runtime_stage": "train",
+          "score": 0.875,
+          "theorem_claim_type": "none",
+          "times_seen": 1,
+          "title": "Off-policy correction omits clipped importance weights",
+          "validation_tier": "observed",
+          "variant_id": 10,
+          "verification_steps": "Run python examples/scenarios/vtrace_importance_weights_buggy.py and confirm the actor term scales with clipped importance weights.",
+          "why": [
+            "variant-first-candidate",
+            "same-error-family",
+            "dense-retrieval",
+            "context-variant-match",
+            "variant-stack-match",
+            "variant-command-match",
+            "variant-path-match",
+            "retrieval-signal",
+            "feedback-prior",
+            "prior-success",
+            "same-project-scope",
+            "text-overlap:actor,assertionerror,clipped,correction",
+            "tag-overlap:assertionerror,testing"
+          ]
+        }
+      },
+      "mcp_triggered": true,
+      "route_ok": true,
+      "scenario_title": "Buggy off-policy importance correction",
+      "score_after_feedback": 0.902,
+      "score_before_feedback": 0.875,
+      "score_uplift_after_feedback": 0.027
+    },
+    {
+      "case_id": "q_learning_fixed",
+      "failure": {
+        "error_excerpt": "",
+        "failed": false,
+        "returncode": 0
+      },
+      "kind": "fixed",
+      "mcp_triggered": false,
+      "route_ok": true,
+      "scenario_title": "Fixed Q-learning terminal handling"
+    },
+    {
+      "case_id": "actor_critic_fixed",
+      "failure": {
+        "error_excerpt": "",
+        "failed": false,
+        "returncode": 0
+      },
+      "kind": "fixed",
+      "mcp_triggered": false,
+      "route_ok": true,
+      "scenario_title": "Fixed actor-critic advantage usage"
+    }
+  ],
+  "generated_at": "2026-04-02T22:37:33+00:00",
+  "seeded_patterns": {
+    "actor_critic_bug": 6,
+    "dqn_target_network_bug": 2,
+    "gae_terminal_mask_bug": 5,
+    "n_step_return_bug": 3,
+    "ppo_clip_objective_bug": 4,
+    "q_learning_bug": 1,
+    "sac_alpha_sign_bug": 7,
+    "td3_policy_delay_bug": 9,
+    "td3_target_smoothing_bug": 8,
+    "vtrace_importance_weight_bug": 10
+  },
+  "summary": {
+    "buggy_cases": 10,
+    "buggy_detection_recall": 1.0,
+    "fixed_cases": 2,
+    "fixed_non_trigger_rate": 1.0,
+    "mean_issue_match_latency_ms": 65.422,
+    "mean_score_uplift_after_feedback": 0.0141,
+    "passed_cases": 12,
+    "routing_accuracy": 1.0,
+    "status": "passed",
+    "total_cases": 12
+  },
+  "transport": {
+    "mode": "mcp_stdio",
+    "server_name": "rl-developer-memory",
+    "tool_count": 12,
+    "tool_names": [
+      "issue_feedback",
+      "issue_get",
+      "issue_guardrails",
+      "issue_list_preferences",
+      "issue_match",
+      "issue_metrics",
+      "issue_recent",
+      "issue_record_resolution",
+      "issue_review_queue",
+      "issue_review_resolve",
+      "issue_search",
+      "issue_set_preference"
+    ]
+  }
+}

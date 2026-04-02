@@ -1,0 +1,5 @@
+# Default reviewers for public repository changes
+* @PhiniteLab
+/src/ @PhiniteLab
+/docs/ @PhiniteLab
+/.github/ @PhiniteLab

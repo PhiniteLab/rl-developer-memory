@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    about: Report vulnerabilities privately. Do not include exploit details in a public issue.
+    url: https://github.com/PhiniteLab/rl-developer-memory/security/policy
+  - name: Support and troubleshooting guide
+    about: Read the support guide before opening a non-bug issue.
+    url: https://github.com/PhiniteLab/rl-developer-memory/blob/main/SUPPORT.md

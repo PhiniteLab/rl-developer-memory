@@ -1,0 +1,49 @@
+schema_version: 1
+name: rl-developer-memory-self-learning
+display_name: RL Developer Memory
+description: Companion skill for RL/control failure-memory retrieval, guardrails, feedback, and verified durable write-back after real failures.
+family: operations
+primary_role: failure_memory
+companions:
+  - rl-developer-workflow
+implicit_policy:
+  allow_implicit_invocation: true
+  safe_auto_invoke: true
+validation:
+  depth: standard
+  requires_tools:
+    - rl_developer_memory
+output_contract:
+  require_evidence: true
+  require_assumption_split: true
+  validation_status_labels: true
+sections:
+  optional:
+    - Retrieval workflow
+    - Scope workflow
+    - Hygiene rules
+trigger_examples:
+  positive:
+    - A PPO training crash may match a known reusable RL developer memory pattern.
+    - A verified rollout fix should be recorded with a canonical symptom and prevention rule.
+  negative:
+    - Broad RL architecture planning with no concrete failure signal.
+    - Casual RL writing help.
+routing:
+  stage: memory
+  trigger_priority: 87
+  primary_triggers:
+    - rl failure
+    - theory inconsistency
+    - rollout mismatch
+    - verified reusable fix
+  must_not_trigger_when:
+    - no failure signal
+    - casual conversation
+    - generic planning
+  preferred_over: []
+  fallback_to:
+    - rl-developer-workflow
+  max_companions: 1
+references:
+  implementation_kit: docs/MCP_RL_INTEGRATION_POLICY.md

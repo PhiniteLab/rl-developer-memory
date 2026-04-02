@@ -1,0 +1,84 @@
+{
+  "experiment_name": "rl-active-gated",
+  "algorithm": "ppo",
+  "rollout_posture": "active",
+  "project_scope": "rl-developer-memory",
+  "train_env_id": "deterministic-bandit-v0",
+  "eval_env_id": "deterministic-bandit-v0",
+  "problem_family": "safe_rl",
+  "dynamics_class": "discrete_time",
+  "state_dimension": 1,
+  "action_dimension": 1,
+  "training": {
+    "seed": 17,
+    "discount": 0.95,
+    "learning_rate": 0.08,
+    "max_steps": 12,
+    "plateau_patience": 4,
+    "early_stop_min_delta": 0.001,
+    "gradient_clip": 0.5,
+    "reward_scale": 1.0,
+    "advantage_scale": 1.0,
+    "target_update_tau": 0.5,
+    "entropy_temperature": 0.1
+  },
+  "evaluation": {
+    "episodes": 3,
+    "required_seed_count": 3,
+    "production_min_seed_count": 5,
+    "baseline_names": [
+      "scalar-baseline"
+    ]
+  },
+  "theory": {
+    "theorem_claim_type": "bellman_consistency",
+    "assumptions": [
+      "markov_transition",
+      "bounded_reward",
+      "stationary_rollout",
+      "lyapunov_candidate_documented",
+      "differentiable_policy"
+    ],
+    "lyapunov_candidate": "quadratic_energy",
+    "notation_profile": "default",
+    "documented_hidden_assumptions": [
+      "observation_sufficiency",
+      "control_objective_well_posed",
+      "differentiable_policy",
+      "stationary_rollout"
+    ],
+    "audit_hooks": [
+      "lyapunov_hook",
+      "hjb_hook",
+      "constraint_hook"
+    ],
+    "artifact_expectations": [
+      "checkpoint_state",
+      "checkpoint_metadata",
+      "theory_mapping_doc",
+      "training_report",
+      "evaluation_report"
+    ],
+    "ablation_axes": [
+      "training.seed",
+      "training.reward_scale",
+      "training.gradient_clip",
+      "training.entropy_temperature"
+    ],
+    "variance_budget": 1.0
+  },
+  "checkpoint": {
+    "root_dir": ".artifacts/rl_backbone/active",
+    "save_every_steps": 3,
+    "keep_last": 3,
+    "resume_from": ""
+  },
+  "rollout_gate_status": {
+    "shadow_health_clean": true,
+    "benchmarks_stable": true,
+    "review_backlog_managed": true
+  },
+  "metadata": {
+    "note": "Example helper config only; do not treat this file as the live Codex runtime authority."
+  }
+}

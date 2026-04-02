@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate tag matches project version
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+
+          tag = os.environ["GITHUB_REF_NAME"]
+          project = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))["project"]
+          version = project["version"]
+          expected = f"v{version}"
+          if tag != expected:
+              raise SystemExit(f"Tag/version mismatch: got {tag!r}, expected {expected!r}")
+          print(f"Tag/version check passed: {tag}")
+          PY
+
+      - name: Install project and build tooling
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e .[dev]
+
+      - name: Run release validation checks
+        run: |
+          ruff check .
+          pyright
+          python -m pytest
+          python -m rl_developer_memory.maintenance smoke
+          python scripts/release_readiness.py --json
+          python -m build
+
+      - name: Verify wheel install in a clean environment
+        run: |
+          python -m venv /tmp/rl-developer-memory-release-venv
+          /tmp/rl-developer-memory-release-venv/bin/python -m pip install --upgrade pip
+          /tmp/rl-developer-memory-release-venv/bin/python -m pip install dist/*.whl
+          /tmp/rl-developer-memory-release-venv/bin/rl-developer-memory-maint --help
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/*
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
