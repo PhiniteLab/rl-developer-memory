@@ -319,12 +319,6 @@ rl-developer-memory-maint server-status
 rl-developer-memory-maint e2e-mcp-reuse-harness --json
 ```
 
-### Wrapper metadata validation
-
-```bash
-python3 scripts/validate_plugin_distribution.py
-```
-
 ### Helpful live checks
 
 ```bash
