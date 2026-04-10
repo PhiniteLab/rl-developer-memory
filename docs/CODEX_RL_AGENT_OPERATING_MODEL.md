@@ -4,6 +4,10 @@ This guide defines a **token-conscious, owner-key-safe, MCP-aware working model*
 
 It is an **operating model**, not a second runtime authority. Live runtime authority remains **`~/.codex/config.toml`**.
 
+> **Navigation:** [Goals](#goals) · [Runtime invariants](#runtime-invariants) · [Agent roles](#1-recommended-agent-roles) · [Orchestration phases](#2-phase-by-phase-orchestration) · [MCP reuse](#3-mcp-reuse-model) · [Parallel work](#4-parallel-vs-sequential-work) · [MCP placement](#5-mcp-lifecycle-placement) · [Token efficiency](#6-token-efficient-design) · [Checkpoints](#7-summaries-and-checkpoints) · [Examples](#8-practical-examples)
+>
+> **Related docs:** [AGENTS.md](../AGENTS.md) (delta contract) · [MCP_RL_INTEGRATION_POLICY.md](MCP_RL_INTEGRATION_POLICY.md) (MCP lifecycle) · [RL_CODING_STANDARDS.md](RL_CODING_STANDARDS.md) (coding standards)
+
 ## Goals
 
 - turn a single high-level RL request into a disciplined multi-phase workflow

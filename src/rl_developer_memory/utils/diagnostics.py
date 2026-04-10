@@ -32,7 +32,7 @@ class FailureSignatureCapture:
 
     def capture(self, *, family: str, step: int, details: Mapping[str, Any]) -> FailureSignature:
         normalized = "|".join(f"{key}={details[key]!r}" for key in sorted(details))
-        digest = sha1(f"{family}|{normalized}".encode("utf-8")).hexdigest()[:12]
+        digest = sha1(f"{family}|{normalized}".encode()).hexdigest()[:12]
         return FailureSignature(family=family, signature=f"{family}:{digest}", step=int(step), details=dict(details))
 
 

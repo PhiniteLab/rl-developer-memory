@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from rl_developer_memory.agents.base import BaseAgent
 from rl_developer_memory.experiments.checkpoints import CheckpointManager
+
+_logger = logging.getLogger(__name__)
 
 
 @dataclass(slots=True, frozen=True)
@@ -27,6 +30,7 @@ class RecoveryManager:
             latest = self.checkpoint_manager.latest()
             record = self.checkpoint_manager.load_record(latest) if latest is not None else None
         if record is None:
+            _logger.warning("Recovery resume failed: no checkpoint found (resume_from=%r)", resume_from)
             return RecoveryResult(action="resume", restored=False, checkpoint="", step=0)
         state, _meta, checkpoint = record
         agent.load_state_dict(state)
@@ -35,9 +39,11 @@ class RecoveryManager:
     def rollback_to_last_stable(self, *, agent: BaseAgent) -> RecoveryResult:
         checkpoint = self.checkpoint_manager.rollback_to_last_stable()
         if checkpoint is None:
+            _logger.warning("Recovery rollback failed: no stable checkpoint available")
             return RecoveryResult(action="rollback", restored=False, checkpoint="", step=0)
         loaded = self.checkpoint_manager.load_record(checkpoint)
         if loaded is None:
+            _logger.warning("Recovery rollback failed: checkpoint file unreadable (step=%d)", checkpoint.step)
             return RecoveryResult(action="rollback", restored=False, checkpoint="", step=0)
         state, _meta, record = loaded
         agent.load_state_dict(state)

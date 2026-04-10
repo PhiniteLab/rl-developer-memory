@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 import sqlite3
 from dataclasses import asdict, dataclass
@@ -11,6 +12,10 @@ from typing import Any
 
 from .migrations import inspect_schema
 from .settings import Settings
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["BackupManager", "BackupResult", "utc_stamp"]
 
 
 def utc_stamp() -> str:
@@ -36,7 +41,7 @@ class BackupManager:
         self.settings = settings
 
     @classmethod
-    def from_env(cls) -> "BackupManager":
+    def from_env(cls) -> BackupManager:
         return cls(Settings.from_env())
 
     def _manifest_path(self, sqlite_path: Path) -> Path:
@@ -77,6 +82,7 @@ class BackupManager:
 
         stamp = utc_stamp()
         local_path = self.settings.backup_dir / f"rl_developer_memory_{stamp}.sqlite3"
+        _logger.info("Starting backup from %s", self.settings.db_path)
 
         src_conn = sqlite3.connect(self.settings.db_path, timeout=30.0)
         try:
@@ -95,15 +101,20 @@ class BackupManager:
 
         mirror_path: Path | None = None
         if self.settings.windows_backup_target:
-            self.settings.windows_backup_target.mkdir(parents=True, exist_ok=True)
-            mirror_path = self.settings.windows_backup_target / local_path.name
-            shutil.copy2(local_path, mirror_path)
-            shutil.copy2(self._manifest_path(local_path), self._manifest_path(mirror_path))
+            try:
+                self.settings.windows_backup_target.mkdir(parents=True, exist_ok=True)
+                mirror_path = self.settings.windows_backup_target / local_path.name
+                shutil.copy2(local_path, mirror_path)
+                shutil.copy2(self._manifest_path(local_path), self._manifest_path(mirror_path))
+            except OSError as exc:
+                _logger.warning("Mirror backup failed (continuing): %s", exc)
+                mirror_path = None
 
         self._prune(self.settings.backup_dir, keep=self.settings.local_backup_keep)
         if self.settings.windows_backup_target:
             self._prune(self.settings.windows_backup_target, keep=self.settings.mirror_backup_keep)
 
+        _logger.info("Backup created: %s (%d bytes)", local_path, local_path.stat().st_size)
         return BackupResult(
             local_path=str(local_path),
             mirror_path=str(mirror_path) if mirror_path else None,
@@ -163,6 +174,7 @@ class BackupManager:
         if not sqlite_path.exists():
             raise FileNotFoundError(f"Backup not found: {sqlite_path}")
 
+        _logger.info("Restoring backup from %s", sqlite_path)
         verification = self.verify_backup(sqlite_path)
         if not verification["verified"]:
             raise ValueError(f"Backup manifest verification failed for {sqlite_path}")

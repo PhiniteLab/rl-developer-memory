@@ -128,23 +128,22 @@ class VariantSplitMergeTests(unittest.TestCase):
             self.app.store,
             "_insert_episode_tx",
             side_effect=RuntimeError("synthetic episode failure"),
-        ):
-            with self.assertRaises(RuntimeError):
-                self.app.issue_record_resolution(
-                    title="Relative sqlite path breaks outside repo root",
-                    raw_error="FileNotFoundError: references/contractsDatabase.sqlite3",
-                    canonical_fix="Resolve the SQLite path relative to __file__.",
-                    prevention_rule="No production DB path may depend on cwd.",
-                    project_scope="global",
-                    canonical_symptom="sqlite database path fails outside repo root",
-                    verification_steps="Run from repo root and external cwd.",
-                    tags="sqlite,path,cwd",
-                    error_family="sqlite_error",
-                    root_cause_class="cwd_relative_path_bug",
-                    command="python -m app.main",
-                    file_path="services/db_loader.py",
-                    domain="python",
-                )
+        ), self.assertRaises(RuntimeError):
+            self.app.issue_record_resolution(
+                title="Relative sqlite path breaks outside repo root",
+                raw_error="FileNotFoundError: references/contractsDatabase.sqlite3",
+                canonical_fix="Resolve the SQLite path relative to __file__.",
+                prevention_rule="No production DB path may depend on cwd.",
+                project_scope="global",
+                canonical_symptom="sqlite database path fails outside repo root",
+                verification_steps="Run from repo root and external cwd.",
+                tags="sqlite,path,cwd",
+                error_family="sqlite_error",
+                root_cause_class="cwd_relative_path_bug",
+                command="python -m app.main",
+                file_path="services/db_loader.py",
+                domain="python",
+            )
 
         with self.app.store.managed_connection() as conn:
             pattern_count = conn.execute("SELECT COUNT(*) AS count FROM issue_patterns").fetchone()["count"]

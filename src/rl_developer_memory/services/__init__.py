@@ -1,3 +1,5 @@
+"""Domain services for consolidation, feedback, guardrails, preferences, records, and audits."""
+
 from .consolidation_service import ConsolidationService
 from .feedback_service import FeedbackService
 from .guardrail_service import GuardrailService
@@ -8,12 +10,12 @@ from .rl_read_only_audit_service import RLReadOnlyAuditService
 from .session_service import SessionService
 
 __all__ = [
-    "RecordResolutionService",
-    "FeedbackService",
-    "SessionService",
     "ConsolidationService",
-    "PreferenceService",
+    "FeedbackService",
     "GuardrailService",
+    "PreferenceService",
     "RLAuditReportingService",
     "RLReadOnlyAuditService",
+    "RecordResolutionService",
+    "SessionService",
 ]

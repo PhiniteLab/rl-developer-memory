@@ -315,8 +315,7 @@ class ServerLifecycleTests(unittest.TestCase):
         finally:
             for proc in procs:
                 proc.terminate()
-            if duplicate is not None:
-                if duplicate.poll() is None:
+            if duplicate is not None and duplicate.poll() is None:
                     duplicate.terminate()
             deadline = time.time() + 5
             while time.time() < deadline and any(proc.poll() is None for proc in procs):

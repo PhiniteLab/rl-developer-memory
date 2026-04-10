@@ -37,7 +37,7 @@ jobs:
         run: pyright
 
       - name: Pytest
-        run: python -m pytest
+        run: python -m pytest --cov=rl_developer_memory --cov-report=term-missing --cov-report=xml:coverage.xml
 
       - name: Smoke
         run: python -m rl_developer_memory.maintenance smoke

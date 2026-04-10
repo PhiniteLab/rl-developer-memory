@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
+import threading
+import time
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -24,6 +27,10 @@ from .migrations import MigrationRunner, SchemaState
 from .models import PatternBundle
 from .normalization import comma_join, parse_tag_string, tokenize
 from .settings import Settings
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["RLDeveloperMemoryStore", "utc_now_iso"]
 
 STRATEGY_PRIOR_ALPHA = 2.0
 STRATEGY_PRIOR_BETA = 2.0
@@ -51,16 +58,19 @@ def parse_iso_datetime(value: str) -> datetime | None:
 class RLDeveloperMemoryStore:
     """SQLite-backed persistence layer for RL developer memory."""
 
+    _BUSY_RETRY_DELAYS = (0.1, 0.2, 0.4)  # exponential backoff for SQLITE_BUSY
+
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self._migration_runner = MigrationRunner()
         self._table_columns_cache: dict[str, set[str]] = {}
+        self._local = threading.local()
 
     @classmethod
-    def from_env(cls) -> "RLDeveloperMemoryStore":
+    def from_env(cls) -> RLDeveloperMemoryStore:
         return cls(Settings.from_env())
 
-    def connect(self) -> sqlite3.Connection:
+    def _new_connection(self) -> sqlite3.Connection:
         self.settings.ensure_dirs()
         conn = sqlite3.connect(self.settings.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
@@ -71,6 +81,23 @@ class RLDeveloperMemoryStore:
         conn.execute("PRAGMA temp_store = MEMORY;")
         return conn
 
+    def connect(self) -> sqlite3.Connection:
+        """Return a thread-local cached connection, creating one if needed."""
+        conn: sqlite3.Connection | None = getattr(self._local, "conn", None)
+        if conn is not None:
+            try:
+                conn.execute("SELECT 1")
+                return conn
+            except sqlite3.Error:
+                try:
+                    conn.close()
+                except sqlite3.Error:
+                    pass
+                self._local.conn = None
+        new_conn = self._new_connection()
+        self._local.conn = new_conn
+        return new_conn
+
     @contextmanager
     def managed_connection(self, *, immediate: bool = False) -> Iterator[sqlite3.Connection]:
         conn = self.connect()
@@ -79,13 +106,39 @@ class RLDeveloperMemoryStore:
                 conn.execute('BEGIN IMMEDIATE;')
             yield conn
             conn.commit()
+        except sqlite3.OperationalError as exc:
+            conn.rollback()
+            if "database is locked" not in str(exc):
+                raise
+            # Retry with exponential backoff on SQLITE_BUSY
+            for delay in self._BUSY_RETRY_DELAYS:
+                time.sleep(delay)
+                try:
+                    if immediate:
+                        conn.execute('BEGIN IMMEDIATE;')
+                    yield conn
+                    conn.commit()
+                    return
+                except sqlite3.OperationalError:
+                    conn.rollback()
+                    continue
+            raise
         except Exception:
             conn.rollback()
             raise
-        finally:
-            conn.close()
+
+    def close(self) -> None:
+        """Close the thread-local cached connection if it exists."""
+        conn: sqlite3.Connection | None = getattr(self._local, "conn", None)
+        if conn is not None:
+            try:
+                conn.close()
+            except sqlite3.Error:
+                pass
+            self._local.conn = None
 
     def initialize(self) -> None:
+        _logger.info("Initializing database at %s", self.settings.db_path)
         with self.managed_connection() as conn:
             self._migration_runner.apply_all(conn)
         self._table_columns_cache.clear()
@@ -112,15 +165,15 @@ class RLDeveloperMemoryStore:
         return report_path
 
     def list_saved_reports(self) -> list[dict[str, Any]]:
-        rows: list[dict[str, Any]] = []
-        for path in sorted(self.report_dir().glob('*.json'), key=lambda item: item.stat().st_mtime, reverse=True):
-            rows.append({
+        return [
+            {
                 'name': path.stem,
                 'path': str(path),
                 'bytes': path.stat().st_size,
                 'updated_at': datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).replace(microsecond=0).isoformat(),
-            })
-        return rows
+            }
+            for path in sorted(self.report_dir().glob('*.json'), key=lambda item: item.stat().st_mtime, reverse=True)
+        ]
 
     def load_saved_report(self, name: str) -> dict[str, Any] | None:
         path = self.report_dir() / f"{name}.json"
@@ -327,7 +380,7 @@ class RLDeveloperMemoryStore:
             "problem_profile": "problem_profile_json",
         }
         for fts_column, source_column in fts_mapping.items():
-            if fts_column not in fts_columns or source_column not in row.keys():
+            if fts_column not in fts_columns or source_column not in row:
                 continue
             insert_columns.append(fts_column)
             insert_values.append(row[source_column])
@@ -1877,7 +1930,7 @@ class RLDeveloperMemoryStore:
                 meta = candidate_meta.setdefault(pattern_id, self._default_candidate_meta())
                 if meta[rank_key] is None:
                     meta[rank_key] = rank
-                if bm25_key and bm25_key in row.keys() and meta[bm25_key] is None:
+                if bm25_key and bm25_key in row and meta[bm25_key] is None:
                     meta[bm25_key] = float(row[bm25_key])
 
         with self.managed_connection() as conn:
@@ -2047,7 +2100,7 @@ class RLDeveloperMemoryStore:
                 meta = candidate_meta.setdefault((pattern_id, variant_id), self._default_variant_candidate_meta())
                 if meta[rank_key] is None:
                     meta[rank_key] = rank
-                if bm25_key and bm25_key in row.keys() and meta[bm25_key] is None:
+                if bm25_key and bm25_key in row and meta[bm25_key] is None:
                     meta[bm25_key] = float(row[bm25_key])
 
         with self.managed_connection() as conn:

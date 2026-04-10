@@ -105,7 +105,7 @@ def build_beta_posterior(
         prior_beta=prior_beta,
     )
     rng = deterministic_rng(*seed_parts)
-    sample = rng.betavariate(max(decayed_alpha, 1e-6), max(decayed_beta, 1e-6))
+    sample = rng.betavariate(max(decayed_alpha, 0.5), max(decayed_beta, 0.5))
     return BetaPosterior(
         alpha=decayed_alpha,
         beta=decayed_beta,

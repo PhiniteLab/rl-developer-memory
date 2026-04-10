@@ -44,7 +44,7 @@ class DenseEmbeddingIndex:
             if len(token) >= 4:
                 for start in range(0, len(token) - 2):
                     self._add(vector, f"tri:{token[start:start + 3]}", 0.35)
-        for left, right in zip(tokens, tokens[1:]):
+        for left, right in zip(tokens, tokens[1:], strict=False):
             self._add(vector, f"bi:{left}_{right}", 0.50)
         norm = math.sqrt(sum(value * value for value in vector))
         if norm <= 1e-9:
@@ -69,7 +69,7 @@ class DenseEmbeddingIndex:
     def _cosine(left: list[float], right: list[float]) -> float:
         if not left or not right or len(left) != len(right):
             return 0.0
-        return sum(left_value * right_value for left_value, right_value in zip(left, right))
+        return sum(left_value * right_value for left_value, right_value in zip(left, right, strict=True))
 
     @staticmethod
     def _compose_pattern_text(row: dict[str, Any]) -> str:

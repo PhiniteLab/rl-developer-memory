@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fcntl
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -29,10 +30,14 @@ class CheckpointManager:
         meta_path = self.root_dir / f"checkpoint-step-{int(step):04d}.meta.json"
         atomic_write_json(state_path, state)
         atomic_write_json(meta_path, {**metadata, "stable": bool(stable)})
-        manifest = self._load_manifest()
-        manifest.append({"step": int(step), "state_path": str(state_path), "meta_path": str(meta_path), "stable": bool(stable)})
-        manifest = manifest[-self.keep_last :]
-        atomic_write_json(self.manifest_path, manifest)
+        entry = {"step": int(step), "state_path": str(state_path), "meta_path": str(meta_path), "stable": bool(stable)}
+        keep = self.keep_last
+
+        def _append(manifest: list[dict[str, Any]]) -> tuple[None, list[dict[str, Any]]]:
+            manifest.append(entry)
+            return None, manifest[-keep:]
+
+        self._locked_manifest_update(_append)
         return CheckpointRecord(step=int(step), state_path=state_path, meta_path=meta_path, stable=bool(stable))
 
     def latest(self) -> CheckpointRecord | None:
@@ -70,19 +75,24 @@ class CheckpointManager:
         return load_json_file(state_path), metadata, CheckpointRecord(step=step, state_path=state_path, meta_path=meta_path, stable=bool(metadata.get("stable", False)))
 
     def mark_stable(self, step: int) -> CheckpointRecord | None:
-        manifest = self._load_manifest()
-        updated: list[dict[str, Any]] = []
-        record: CheckpointRecord | None = None
-        for item in manifest:
-            stable = bool(item.get("stable", False)) or int(item["step"]) == int(step)
-            next_item = {**item, "stable": stable}
-            updated.append(next_item)
-            if int(item["step"]) == int(step):
-                record = CheckpointRecord(step=int(item["step"]), state_path=Path(item["state_path"]), meta_path=Path(item["meta_path"]), stable=stable)
-                meta = load_json_file(record.meta_path)
-                atomic_write_json(record.meta_path, {**meta, "stable": stable})
-        atomic_write_json(self.manifest_path, updated)
-        return record
+        target_step = int(step)
+        result_holder: list[CheckpointRecord | None] = [None]
+
+        def _mark(manifest: list[dict[str, Any]]) -> tuple[None, list[dict[str, Any]]]:
+            updated: list[dict[str, Any]] = []
+            for item in manifest:
+                stable = bool(item.get("stable", False)) or int(item["step"]) == target_step
+                next_item = {**item, "stable": stable}
+                updated.append(next_item)
+                if int(item["step"]) == target_step:
+                    rec = CheckpointRecord(step=int(item["step"]), state_path=Path(item["state_path"]), meta_path=Path(item["meta_path"]), stable=stable)
+                    meta = load_json_file(rec.meta_path)
+                    atomic_write_json(rec.meta_path, {**meta, "stable": stable})
+                    result_holder[0] = rec
+            return None, updated
+
+        self._locked_manifest_update(_mark)
+        return result_holder[0]
 
     def latest_stable(self) -> CheckpointRecord | None:
         stable = [item for item in self._load_manifest() if bool(item.get("stable", False))]
@@ -92,28 +102,62 @@ class CheckpointManager:
         return CheckpointRecord(step=int(item["step"]), state_path=Path(item["state_path"]), meta_path=Path(item["meta_path"]), stable=True)
 
     def rollback(self) -> CheckpointRecord | None:
-        manifest = self._load_manifest()
-        if len(manifest) < 2:
-            return None
-        manifest = manifest[:-1]
-        atomic_write_json(self.manifest_path, manifest)
-        item = manifest[-1]
-        return CheckpointRecord(
-            step=int(item["step"]),
-            state_path=Path(item["state_path"]),
-            meta_path=Path(item["meta_path"]),
-            stable=bool(item.get("stable", False)),
-        )
+        result_holder: list[CheckpointRecord | None] = [None]
+
+        def _rollback(manifest: list[dict[str, Any]]) -> tuple[None, list[dict[str, Any]] | None]:
+            if len(manifest) < 2:
+                return None, None
+            manifest = manifest[:-1]
+            item = manifest[-1]
+            result_holder[0] = CheckpointRecord(
+                step=int(item["step"]),
+                state_path=Path(item["state_path"]),
+                meta_path=Path(item["meta_path"]),
+                stable=bool(item.get("stable", False)),
+            )
+            return None, manifest
+
+        self._locked_manifest_update(_rollback)
+        return result_holder[0]
 
     def rollback_to_last_stable(self) -> CheckpointRecord | None:
         latest_stable = self.latest_stable()
         if latest_stable is None:
             return None
-        manifest = [item for item in self._load_manifest() if int(item["step"]) <= latest_stable.step]
-        atomic_write_json(self.manifest_path, manifest)
+        cutoff = latest_stable.step
+
+        def _rollback_stable(manifest: list[dict[str, Any]]) -> tuple[None, list[dict[str, Any]]]:
+            return None, [item for item in manifest if int(item["step"]) <= cutoff]
+
+        self._locked_manifest_update(_rollback_stable)
         return latest_stable
 
-    def _load_manifest(self) -> list[dict[str, Any]]:
+    def _locked_manifest_update(self, updater: Any) -> Any:
+        """Read-modify-write manifest under an exclusive file lock."""
+        lock_path = self.manifest_path.with_suffix(".lock")
+        lock_path.touch(exist_ok=True)
+        with open(lock_path) as lock_fd:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX)
+            try:
+                manifest = self._load_manifest_unlocked()
+                result, new_manifest = updater(manifest)
+                if new_manifest is not None:
+                    atomic_write_json(self.manifest_path, new_manifest)
+                return result
+            finally:
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+
+    def _load_manifest_unlocked(self) -> list[dict[str, Any]]:
         if not self.manifest_path.exists():
             return []
         return list(load_json_file(self.manifest_path))
+
+    def _load_manifest(self) -> list[dict[str, Any]]:
+        lock_path = self.manifest_path.with_suffix(".lock")
+        lock_path.touch(exist_ok=True)
+        with open(lock_path) as lock_fd:
+            fcntl.flock(lock_fd, fcntl.LOCK_SH)
+            try:
+                return self._load_manifest_unlocked()
+            finally:
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)

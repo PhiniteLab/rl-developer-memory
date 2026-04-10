@@ -332,15 +332,13 @@ def validate_experiment_consistency(
                 )
             )
 
-    if run_seed_count >= required_seed_count and metrics_payload.get("return_mean") is not None:
-        if metrics_payload.get("return_std") is None and metrics_payload.get("confidence_interval") is None:
-            findings.append(_finding("experiment", "warning", "Seeded evaluation reports return_mean without return_std or confidence_interval."))
+    if run_seed_count >= required_seed_count and metrics_payload.get("return_mean") is not None and metrics_payload.get("return_std") is None and metrics_payload.get("confidence_interval") is None:
+        findings.append(_finding("experiment", "warning", "Seeded evaluation reports return_mean without return_std or confidence_interval."))
 
-    if normalized_problem_family in _CONTROL_PROBLEM_FAMILIES:
-        if metrics_payload and metrics_payload.get("tracking_rmse") is None:
-            findings.append(_finding("experiment", "warning", "Control-oriented experiment is missing tracking_rmse."))
-        if metrics_payload and metrics_payload.get("control_effort") is None:
-            findings.append(_finding("experiment", "warning", "Control-oriented experiment is missing control_effort."))
+    if normalized_problem_family in _CONTROL_PROBLEM_FAMILIES and metrics_payload and metrics_payload.get("tracking_rmse") is None:
+        findings.append(_finding("experiment", "warning", "Control-oriented experiment is missing tracking_rmse."))
+    if normalized_problem_family in _CONTROL_PROBLEM_FAMILIES and metrics_payload and metrics_payload.get("control_effort") is None:
+        findings.append(_finding("experiment", "warning", "Control-oriented experiment is missing control_effort."))
 
     if normalized_algorithm_family in _RL_ALGORITHM_FAMILIES and normalized_runtime_stage == "train":
         normalization = run_manifest.get("normalization")
@@ -390,11 +388,10 @@ def validate_theory_consistency(
         if not any(token in assumptions_blob for token in ("terminal", "boundary", "value function boundary", "terminal set")):
             findings.append(_finding("theory", "warning", "HJB optimality claim does not document terminal or boundary assumptions."))
 
-    if normalized_theorem == "bellman_consistency":
-        if not normalized_algorithm_family and normalized_problem_family not in {"bellman_dp", "actor_critic", "policy_gradient", "offline_rl", "safe_rl", "robust_rl", "meta_rl"}:
+    if normalized_theorem == "bellman_consistency" and not normalized_algorithm_family and normalized_problem_family not in {"bellman_dp", "actor_critic", "policy_gradient", "offline_rl", "safe_rl", "robust_rl", "meta_rl"}:
             findings.append(_finding("theory", "warning", "Bellman consistency claim is missing an RL/DP algorithm or matching problem family."))
 
-    if normalized_theorem in {"recursive_feasibility", "constraint_satisfaction"} and normalized_problem_family != "mpc":
+    if normalized_theorem in ("recursive_feasibility", "constraint_satisfaction") and normalized_problem_family != "mpc":
         findings.append(_finding("theory", "warning", f"{normalized_theorem} is usually associated with MPC, but problem_family is '{normalized_problem_family}'."))
 
     if normalized_theorem not in {"", "none"} and not validation_payload.get("theory_reviewed"):

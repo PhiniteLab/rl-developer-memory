@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from .matching import IssueMatcher
@@ -13,6 +14,10 @@ from .services import (
     SessionService,
 )
 from .storage import RLDeveloperMemoryStore
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["RLDeveloperMemoryApp"]
 
 
 class RLDeveloperMemoryApp:

@@ -1,6 +1,16 @@
 """Training pipeline and stabilization policy for the additive RL backbone."""
 
 from .pipeline import StabilizationPolicy, TrainerPipeline
+from .schedules import (
+    ConstantLR,
+    CosineAnnealingLR,
+    ExponentialDecayLR,
+    ExponentialEpsilonDecay,
+    LinearDecayLR,
+    LinearEpsilonDecay,
+    LRSchedule,
+    WarmupLR,
+)
 from .stability import (
     EarlyStoppingController,
     EntropyTemperatureController,
@@ -13,9 +23,16 @@ from .stability import (
 )
 
 __all__ = [
+    "ConstantLR",
+    "CosineAnnealingLR",
     "EarlyStoppingController",
     "EntropyTemperatureController",
+    "ExponentialDecayLR",
+    "ExponentialEpsilonDecay",
     "HardTargetUpdatePolicy",
+    "LRSchedule",
+    "LinearDecayLR",
+    "LinearEpsilonDecay",
     "ObservationNormalizer",
     "PlateauDetector",
     "RewardNormalizer",
@@ -23,4 +40,5 @@ __all__ = [
     "StabilizationPolicy",
     "TrainerPipeline",
     "UpdateController",
+    "WarmupLR",
 ]

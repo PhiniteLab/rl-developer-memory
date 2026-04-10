@@ -212,28 +212,28 @@ class StrategyThompsonBandit:
                 prior_alpha=STRATEGY_PRIOR_ALPHA,
                 prior_beta=STRATEGY_PRIOR_BETA,
                 half_life_days=self.settings.strategy_half_life_days,
-                seed_parts=seed_base + ("global",),
+                seed_parts=(*seed_base, "global"),
             )
             repo_posterior = self._load_posterior(
                 snapshot.get("repo", {}).get(strategy_key),
                 prior_alpha=STRATEGY_PRIOR_ALPHA,
                 prior_beta=STRATEGY_PRIOR_BETA,
                 half_life_days=self.settings.strategy_half_life_days,
-                seed_parts=seed_base + ("repo", profile.repo_name),
+                seed_parts=(*seed_base, "repo", profile.repo_name),
             )
             user_posterior = self._load_posterior(
                 snapshot.get("user", {}).get(strategy_key),
                 prior_alpha=STRATEGY_PRIOR_ALPHA,
                 prior_beta=STRATEGY_PRIOR_BETA,
                 half_life_days=self.settings.strategy_half_life_days,
-                seed_parts=seed_base + ("user", profile.user_scope),
+                seed_parts=(*seed_base, "user", profile.user_scope),
             )
             variant_posterior = self._load_posterior(
                 snapshot.get("variants", {}).get(variant_id),
                 prior_alpha=VARIANT_PRIOR_ALPHA,
                 prior_beta=VARIANT_PRIOR_BETA,
                 half_life_days=self.settings.variant_half_life_days,
-                seed_parts=seed_base + ("variant",),
+                seed_parts=(*seed_base, "variant"),
             )
 
             strategy_mean, strategy_sample, strategy_std = self._combined_strategy_signal(

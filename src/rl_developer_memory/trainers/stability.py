@@ -48,9 +48,9 @@ class RunningNormalizer:
             return float(value)
         if not is_finite_number(float(value)):
             return float(value)
+        normalized = (float(value) - self.mean) / (self.variance**0.5 + self.epsilon)
         if update:
             self.update(value)
-        normalized = (float(value) - self.mean) / (self.variance**0.5 + self.epsilon)
         return max(-self.clip_range, min(self.clip_range, normalized))
 
     def state_dict(self) -> dict[str, float | int | bool]:

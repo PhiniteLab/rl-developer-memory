@@ -1,8 +1,12 @@
+"""Secrets redaction and sensitive text sanitization utilities."""
+
 from __future__ import annotations
 
 import json
 import re
 from typing import Any
+
+__all__ = ["sanitize_json_text", "sanitize_mapping", "sanitize_text"]
 
 _SECRET_KEY_RE = re.compile(
     r"(?:^|[_\-\s])(?:pass(?:word)?|secret|token|api[_\-]?key|client[_\-]?secret|authorization|auth[_\-]?token|credential|private[_\-]?key)(?:$|[_\-\s])",
@@ -48,9 +52,7 @@ def _looks_secret_value(value: str) -> bool:
         return False
     if _SECRET_VALUE_RE.match(candidate):
         return True
-    if len(candidate) >= 24 and re.fullmatch(r"[A-Za-z0-9_\-]{24,}", candidate):
-        return True
-    return False
+    return len(candidate) >= 24 and re.fullmatch(r"[A-Za-z0-9_\-]{24,}", candidate) is not None
 
 
 def _redact_text(text: str) -> str:

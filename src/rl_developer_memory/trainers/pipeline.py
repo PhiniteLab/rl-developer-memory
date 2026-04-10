@@ -9,6 +9,7 @@ from rl_developer_memory.callbacks.base import CallbackManager
 from rl_developer_memory.envs.base import Environment
 from rl_developer_memory.experiments.metrics import MetricsCollector
 from rl_developer_memory.experiments.recovery import RecoveryManager, RecoveryResult
+from rl_developer_memory.trainers.schedules import ConstantLR, LRSchedule
 from rl_developer_memory.trainers.stability import (
     EarlyStoppingController,
     EntropyTemperatureController,
@@ -49,6 +50,7 @@ class StabilizationPolicy:
     exploding_update_abs_threshold: float = 1_000.0
     max_anomalies: int = 1
     anomaly_keys: tuple[str, ...] = ("bellman_residual", "critic_objective", "actor_objective")
+    lr_schedule: LRSchedule | None = None
 
 
 @dataclass(slots=True)
@@ -60,6 +62,7 @@ class TrainerRuntime:
     target_update_policy: TargetUpdatePolicy
     entropy_controller: EntropyTemperatureController
     early_stopping: EarlyStoppingController
+    lr_schedule: LRSchedule = field(default_factory=lambda: ConstantLR(lr=0.01))
     diagnostics: TrainingDiagnosticsCollector = field(default_factory=TrainingDiagnosticsCollector)
     failure_signatures: FailureSignatureCapture = field(default_factory=FailureSignatureCapture)
 
@@ -111,6 +114,7 @@ class TrainerPipeline:
                 ),
                 max_anomalies=self.stabilization.max_anomalies,
             ),
+            lr_schedule=self.stabilization.lr_schedule or ConstantLR(lr=0.01),
         )
 
     def define_problem_context(self, *, env: Environment) -> dict[str, Any]:
@@ -283,7 +287,7 @@ class TrainerPipeline:
         reporting_template = self.build_reporting_template()
         step = 0
         for step in range(1, max(int(max_steps), 1) + 1):
-            normalized_observation = self.runtime.observation_normalizer.normalize(observation)
+            normalized_observation = self.runtime.observation_normalizer.normalize(observation, update=False)
             action = agent.act(normalized_observation)
             step_result = env.step(action)
             normalized_observation, normalized_next_observation, reward = self._normalize_step_inputs(
@@ -302,6 +306,7 @@ class TrainerPipeline:
             entropy_temperature = self.runtime.entropy_controller.update(abs(action))
             agent.context.entropy_temperature = entropy_temperature
             self.runtime.diagnostics.record_temperature(entropy_temperature)
+            agent.context.learning_rate = self.runtime.lr_schedule.get_lr(step)
             update_payload = agent.learn(
                 observation=normalized_observation,
                 reward=reward,

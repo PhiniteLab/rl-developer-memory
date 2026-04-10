@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
@@ -8,6 +9,10 @@ from .normalization import build_query_profile
 from .retrieval import CandidateRetriever, HeuristicRanker, MatchDecisionPolicy, RankedCandidate
 from .settings import Settings
 from .storage import RLDeveloperMemoryStore
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["IssueMatcher"]
 
 
 class IssueMatcher:
@@ -99,6 +104,10 @@ class IssueMatcher:
         visible_ranked = [] if decision.status == "abstain" else ranked[:limit]
         visible_matches = [self._to_match_result(item) for item in visible_ranked]
         latency_ms = int((time.perf_counter() - start) * 1000)
+        _logger.debug(
+            "match_bundle: family=%s scope=%s decision=%s candidates=%d latency=%dms",
+            profile.error_family, project_scope, decision.status, len(ranked), latency_ms,
+        )
 
         event_meta: dict[str, Any] = {}
         if log_event and self.settings.telemetry_enabled:
@@ -260,6 +269,7 @@ class IssueMatcher:
             validation_tier=str(candidate.get("validation_tier", "")),
             algorithm_family=str(best_variant.get("algorithm_family") or candidate.get("algorithm_family", "")),
             runtime_stage=str(best_variant.get("runtime_stage") or candidate.get("runtime_stage", "")),
+            score_breakdown=ranked.features.get("_score_breakdown"),  # type: ignore[arg-type]
         )
 
     @staticmethod

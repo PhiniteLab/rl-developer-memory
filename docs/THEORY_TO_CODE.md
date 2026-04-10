@@ -92,10 +92,10 @@ The goal is that any future RL algorithm added to the repo follows the same prof
 
 | step_id | order | title | code_anchor |
 | --- | --- | --- | --- |
-| problem_definition | 1 | env/problem tanımı | rl_developer_memory.trainers.pipeline.TrainerPipeline.define_problem_context |
+| problem_definition | 1 | env/problem definition | rl_developer_memory.trainers.pipeline.TrainerPipeline.define_problem_context |
 | interface_contract | 2 | observation-action interface | rl_developer_memory.trainers.pipeline.TrainerPipeline.prepare_interfaces |
 | network_setup | 3 | network ve parameter config | rl_developer_memory.trainers.pipeline.TrainerPipeline.build_model_components |
-| objective_definition | 4 | objective/loss tanımı | rl_developer_memory.trainers.pipeline.TrainerPipeline.define_loss_objectives |
+| objective_definition | 4 | objective/loss definition | rl_developer_memory.trainers.pipeline.TrainerPipeline.define_loss_objectives |
 | theory_binding | 5 | update equations ve theorem binding | rl_developer_memory.trainers.pipeline.TrainerPipeline.bind_theory |
 | training_loop | 6 | training loop | rl_developer_memory.trainers.pipeline.TrainerPipeline.train |
 | stabilization | 7 | stabilization layer | rl_developer_memory.trainers.pipeline.TrainerPipeline.apply_stabilization |

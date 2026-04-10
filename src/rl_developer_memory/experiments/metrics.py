@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from collections import defaultdict
 from statistics import mean
-from typing import DefaultDict
 
 
 class MetricsCollector:
     """Collect scalar metrics and summarize them into risk-aware aggregates."""
 
     def __init__(self) -> None:
-        self._series: DefaultDict[str, list[float]] = defaultdict(list)
+        self._series: defaultdict[str, list[float]] = defaultdict(list)
 
     def log(self, **metrics: float) -> None:
         for key, value in metrics.items():

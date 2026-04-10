@@ -1,3 +1,5 @@
 """Maintenance CLI package."""
 
-from .cli import *  # noqa: F401,F403
+from .cli import build_parser, main
+
+__all__ = ["build_parser", "main"]

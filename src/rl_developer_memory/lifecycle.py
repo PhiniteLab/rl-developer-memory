@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import _thread
 import atexit
 import hashlib
 import json
+import logging
 import os
 import re
 import select
@@ -11,13 +13,14 @@ import sys
 import tempfile
 import threading
 import time
-import _thread
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from .settings import Settings
+
+_logger = logging.getLogger(__name__)
 
 try:
     import fcntl  # type: ignore[attr-defined]
@@ -56,6 +59,10 @@ def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
         os.fsync(handle.fileno())
         temp_name = handle.name
     os.replace(temp_name, path)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
 
 
 @dataclass(slots=True)
@@ -186,7 +193,7 @@ class MCPServerLifecycle:
         return self.settings.server_lock_dir / f"rl_developer_memory_mcp_owner_{digest}.lock"
 
     def _parent_lock_path(self) -> Path:
-        digest = hashlib.sha256(f"rl-developer-memory:parent:{self._parent_pid}".encode("utf-8")).hexdigest()[:24]
+        digest = hashlib.sha256(f"rl-developer-memory:parent:{self._parent_pid}".encode()).hexdigest()[:24]
         return self.settings.server_lock_dir / f"rl_developer_memory_mcp_parent_{digest}.lock"
 
     def _open_lock_handle(self, path: Path) -> Any:
@@ -619,6 +626,7 @@ class MCPServerLifecycle:
         self._write_slot_status(running=True, note="server-started")
         self._write_aggregate_status(note="server-started")
         self._start_monitor()
+        _logger.info("Lifecycle started: slot=%s pid=%d", self._slot, os.getpid())
 
     def mark_initialized(self) -> None:
         if self._initialized:
@@ -632,6 +640,7 @@ class MCPServerLifecycle:
     def release(self) -> None:
         if not self._started:
             return
+        _logger.info("Lifecycle releasing: slot=%s reason=%s", self._slot, self._shutdown_reason or "server-stopped")
         self._monitor_stop.set()
         if self._monitor_thread is not None and self._monitor_thread is not threading.current_thread():
             self._monitor_thread.join(timeout=0.5)

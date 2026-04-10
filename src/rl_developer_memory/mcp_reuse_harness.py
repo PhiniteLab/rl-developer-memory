@@ -130,12 +130,12 @@ def _completed_process_snapshot(proc: subprocess.Popen[str]) -> StatusDict:
     if proc.stdout is not None:
         try:
             stdout = proc.stdout.read()
-        except Exception:
+        except (OSError, ValueError):
             stdout = ""
     if proc.stderr is not None:
         try:
             stderr = proc.stderr.read()
-        except Exception:
+        except (OSError, ValueError):
             stderr = ""
     return {
         "returncode": proc.returncode,
@@ -273,8 +273,7 @@ def run_harness(timeout: float) -> StatusDict:
                     "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_ROLE": "subagent",
                 },
                 stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
                 timeout=timeout,
                 check=False,

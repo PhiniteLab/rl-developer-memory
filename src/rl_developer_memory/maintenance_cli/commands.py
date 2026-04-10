@@ -159,6 +159,9 @@ def _recommended_env(*, settings: Settings, mode: str, max_instances: int, profi
         "RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY": "1" if resolved_max is None else "0",
         "RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE": "0" if resolved_max is None or resolved_max > 1 else "1",
         "RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES": "0" if resolved_max is None else str(resolved_max),
+        "RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON": "1",
+        "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_IDLE_TIMEOUT_SECONDS": "0",
+        "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS": "1.0",
         "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT": "1",
         "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE": "1" if mode == "shadow" else "0",
         "RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES": "1",
@@ -272,6 +275,9 @@ def cmd_doctor(mode: str, max_instances: int, codex_home: str | None, profile: s
             "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE",
             "RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES",
             "RL_DEVELOPER_MEMORY_ENABLE_REDACTION",
+            "RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON",
+            "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_IDLE_TIMEOUT_SECONDS",
+            "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS",
         )
         rl_keys = (
             "RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL",

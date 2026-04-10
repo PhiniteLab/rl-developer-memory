@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 def test_docs_sync_report_matches_public_surface() -> None:
     report = validate_docs_sync(ROOT)
     assert report["status"] == "passed"
-    assert report["mcp_tool_count"] == 12
+    assert report["mcp_tool_count"] == 13
     assert report["maintenance_subcommand_count"] == 28
 
 

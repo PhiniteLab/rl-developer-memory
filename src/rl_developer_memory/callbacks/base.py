@@ -82,3 +82,52 @@ class EarlyStopCallback(Callback):
         if max(recent) - min(recent) <= self.min_delta:
             state.should_stop = True
             state.metadata.setdefault("early_stop", []).append({"step": step, "metric": self.metric_key})
+
+
+class MetricLoggerCallback(Callback):
+    """Record selected metrics each step for post-hoc analysis."""
+
+    def __init__(self, *, keys: tuple[str, ...] | None = None) -> None:
+        self.keys = keys
+        self.log: list[dict[str, float]] = []
+
+    def on_step(self, *, step: int, metrics: dict[str, float], state: CallbackState) -> None:
+        if self.keys is not None:
+            entry = {k: metrics[k] for k in self.keys if k in metrics}
+        else:
+            entry = dict(metrics)
+        entry["_step"] = float(step)
+        self.log.append(entry)
+
+
+class LRScheduleCallback(Callback):
+    """Apply a learning-rate schedule to the agent context each step.
+
+    Requires the agent to be stored in ``state.metadata["agent"]``.
+    """
+
+    def __init__(self, *, schedule: Any) -> None:
+        self.schedule = schedule
+
+    def on_step(self, *, step: int, metrics: dict[str, float], state: CallbackState) -> None:
+        agent = state.metadata.get("agent")
+        if agent is None:
+            return
+        new_lr = self.schedule.get_lr(step)
+        if hasattr(agent, "context"):
+            agent.context.learning_rate = float(new_lr)
+
+
+class GradientNormCallback(Callback):
+    """Stop training if gradient norm exceeds a hard ceiling."""
+
+    def __init__(self, *, max_gradient_norm: float = 100.0) -> None:
+        self.max_gradient_norm = float(max_gradient_norm)
+
+    def on_step(self, *, step: int, metrics: dict[str, float], state: CallbackState) -> None:
+        grad_norm = metrics.get("gradient_norm", 0.0)
+        if grad_norm > self.max_gradient_norm:
+            state.should_stop = True
+            state.metadata.setdefault("gradient_explosion", []).append(
+                {"step": step, "gradient_norm": grad_norm}
+            )

@@ -8,6 +8,15 @@ INSTALL_ROOT="$(cd "$THIS_DIR/.." && pwd)"
 source "$INSTALL_ROOT/config/install.env"
 
 CRON_SCHEDULE="${CRON_SCHEDULE:-17 */2 * * *}"
+
+# Validate cron schedule format (5 fields, each with digits/wildcards/ranges/steps)
+CRON_FIELD='[0-9*,/\-]+'
+if ! printf '%s' "$CRON_SCHEDULE" | grep -Eq "^${CRON_FIELD}[[:space:]]+${CRON_FIELD}[[:space:]]+${CRON_FIELD}[[:space:]]+${CRON_FIELD}[[:space:]]+${CRON_FIELD}$"; then
+  echo "Invalid CRON_SCHEDULE format: '$CRON_SCHEDULE'" >&2
+  echo "Expected 5-field cron expression (e.g., '17 */2 * * *')" >&2
+  exit 1
+fi
+
 CRON_TAG="# rl-developer-memory backup"
 CRON_COMMAND="bash \"$INSTALL_ROOT/scripts/run_backup.sh\" >/dev/null 2>>\"$STATE_ROOT/log/backup.cron.log\" $CRON_TAG"
 

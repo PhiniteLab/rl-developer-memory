@@ -139,8 +139,12 @@ class HeuristicRanker:
             enable_rl_control=enable_rl_control,
         )
         base_total = 0.0
+        score_breakdown: dict[str, float] = {}
         for name, weight in self.DEFAULT_WEIGHTS.items():
-            base_total += weight * features.get(name, 0.0)
+            contribution = weight * features.get(name, 0.0)
+            if abs(contribution) > 1e-9:
+                score_breakdown[name] = round(contribution, 6)
+            base_total += contribution
 
         preference_adjustment, preference_reasons = self._preference_adjustment(profile, candidate, preference_rules)
         for reason in preference_reasons:
@@ -153,6 +157,7 @@ class HeuristicRanker:
         features["preference_adjustment"] = preference_adjustment
         features["strategy_bandit_adjustment"] = 0.0
         features["strategy_bandit_final_score"] = total
+        features["_score_breakdown"] = score_breakdown  # type: ignore[assignment]
         return RankedCandidate(candidate=candidate, score=total, features=features, reasons=reasons)
 
     @staticmethod
@@ -241,7 +246,7 @@ class HeuristicRanker:
                     item.reasons.insert(0, "strategy-bandit-shadow-promote")
                 elif key == baseline_key and "strategy-bandit-shadow-hold" not in item.reasons:
                     item.reasons.append("strategy-bandit-shadow-hold")
-            head = [baseline] + sorted(head[1:], key=self._sort_key)
+            head = [baseline, *sorted(head[1:], key=self._sort_key)]
         elif promoted_key is not None:
             for item in head:
                 key = self._candidate_key(item)
@@ -269,7 +274,7 @@ class HeuristicRanker:
                     continue
                 item.score = min(float(analysis.final_score), max(baseline_score - 0.001, 0.0))
             rest = sorted(head[1:], key=self._sort_key)
-            head = [baseline] + rest
+            head = [baseline, *rest]
 
         return head + tail
 

@@ -198,9 +198,9 @@ def run_hard_negative_benchmark(app: Any, *, repeats: int = 1, limit: int = 3) -
 
 
 __all__ = [
-    "HardNegativeCase",
     "NEGATIVE_HARD_NEGATIVE_CASES",
     "POSITIVE_HARD_NEGATIVE_CASES",
+    "HardNegativeCase",
     "run_hard_negative_benchmark",
     "seed_hard_negative_memory",
 ]

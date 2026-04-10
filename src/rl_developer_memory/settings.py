@@ -1,10 +1,36 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import socket
 from dataclasses import dataclass
 from pathlib import Path
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["FLAG_REGISTRY", "Settings"]
+
+# ---------------------------------------------------------------------------
+# Feature flag registry — documents every boolean feature flag and its env var
+# ---------------------------------------------------------------------------
+FLAG_REGISTRY: dict[str, str] = {
+    "telemetry_enabled": "RL_DEVELOPER_MEMORY_TELEMETRY_ENABLED",
+    "enable_dense_retrieval": "RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL",
+    "enable_strategy_bandit": "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT",
+    "enable_strategy_bandit_shadow_mode": "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE",
+    "enable_preference_rules": "RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES",
+    "enable_redaction": "RL_DEVELOPER_MEMORY_ENABLE_REDACTION",
+    "enable_calibration_profile": "RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE",
+    "enforce_single_mcp_instance": "RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE",
+    "server_require_owner_key": "RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY",
+    "server_enforce_parent_singleton": "RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON",
+    "enable_rl_control": "RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL",
+    "enable_theory_audit": "RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT",
+    "enable_experiment_audit": "RL_DEVELOPER_MEMORY_ENABLE_EXPERIMENT_AUDIT",
+    "rl_strict_promotion": "RL_DEVELOPER_MEMORY_RL_STRICT_PROMOTION",
+    "rl_review_gated_promotion": "RL_DEVELOPER_MEMORY_RL_REVIEW_GATED_PROMOTION",
+}
 
 
 @dataclass(frozen=True)
@@ -74,7 +100,7 @@ class Settings:
     rl_max_artifact_refs: int
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         home = Path(os.environ.get("RL_DEVELOPER_MEMORY_HOME", Path.home() / ".local" / "share" / "rl-developer-memory")).expanduser()
         db_path = Path(os.environ.get("RL_DEVELOPER_MEMORY_DB_PATH", home / "rl_developer_memory.sqlite3")).expanduser()
         _validate_local_linux_db_path(db_path)
@@ -100,6 +126,7 @@ class Settings:
             try:
                 parsed_max_instances = int(raw_max_instances)
             except ValueError:
+                _logger.warning("Invalid MAX_MCP_INSTANCES=%r, defaulting based on owner-key policy", raw_max_instances)
                 max_mcp_instances = None if require_owner_key else 2
             else:
                 max_mcp_instances = None if parsed_max_instances <= 0 else max(parsed_max_instances, 1)
@@ -110,6 +137,7 @@ class Settings:
             try:
                 duplicate_exit_code = max(int(raw_duplicate_exit_code), 0)
             except ValueError:
+                _logger.warning("Invalid SERVER_DUPLICATE_EXIT_CODE=%r, defaulting to 75", raw_duplicate_exit_code)
                 duplicate_exit_code = 75
         else:
             duplicate_exit_code = 75
@@ -131,6 +159,7 @@ class Settings:
         try:
             server_parent_instance_monitor_interval_seconds = max(float(raw_parent_monitor_interval or "1.0"), 0.2)
         except ValueError:
+            _logger.warning("Invalid PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS=%r, defaulting to 1.0", raw_parent_monitor_interval)
             server_parent_instance_monitor_interval_seconds = 1.0
         owner_key = ""
         owner_key_source = ""
@@ -197,11 +226,11 @@ class Settings:
             match_accept_threshold=float(os.environ.get("RL_DEVELOPER_MEMORY_MATCH_ACCEPT_THRESHOLD", "0.68")),
             match_weak_threshold=float(os.environ.get("RL_DEVELOPER_MEMORY_MATCH_WEAK_THRESHOLD", "0.40")),
             ambiguity_margin=float(os.environ.get("RL_DEVELOPER_MEMORY_AMBIGUITY_MARGIN", "0.09")),
-            session_ttl_seconds=int(os.environ.get("RL_DEVELOPER_MEMORY_SESSION_TTL_SECONDS", "21600")),
+            session_ttl_seconds=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_SESSION_TTL_SECONDS", "21600")), 60), 604800),
             telemetry_enabled=os.environ.get("RL_DEVELOPER_MEMORY_TELEMETRY_ENABLED", "1").strip().lower() not in {"0", "false", "no"},
             enable_dense_retrieval=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL", "1").strip().lower() not in {"0", "false", "no"},
-            dense_embedding_dim=max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_EMBEDDING_DIM", "192")), 32),
-            dense_candidate_limit=max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_CANDIDATE_LIMIT", "16")), 4),
+            dense_embedding_dim=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_EMBEDDING_DIM", "192")), 32), 4096),
+            dense_candidate_limit=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_CANDIDATE_LIMIT", "16")), 4), 500),
             dense_similarity_floor=float(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_SIMILARITY_FLOOR", "0.12")),
             dense_model_name=os.environ.get("RL_DEVELOPER_MEMORY_DENSE_MODEL_NAME", "hash-ngrams-v1").strip() or "hash-ngrams-v1",
             enable_strategy_bandit=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT", "0").strip().lower() not in {"0", "false", "no"},
@@ -216,8 +245,8 @@ class Settings:
             preference_overlay_scale=float(os.environ.get("RL_DEVELOPER_MEMORY_PREFERENCE_OVERLAY_SCALE", "1.0")),
             max_preference_adjustment=float(os.environ.get("RL_DEVELOPER_MEMORY_MAX_PREFERENCE_ADJUSTMENT", "0.18")),
             guardrail_limit=max(int(os.environ.get("RL_DEVELOPER_MEMORY_GUARDRAIL_LIMIT", "5")), 1),
-            telemetry_retention_days=max(int(os.environ.get("RL_DEVELOPER_MEMORY_TELEMETRY_RETENTION_DAYS", "90")), 1),
-            resolved_review_retention_days=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RESOLVED_REVIEW_RETENTION_DAYS", "120")), 1),
+            telemetry_retention_days=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_TELEMETRY_RETENTION_DAYS", "90")), 1), 3650),
+            resolved_review_retention_days=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_RESOLVED_REVIEW_RETENTION_DAYS", "120")), 1), 3650),
             enable_redaction=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_REDACTION", "1").strip().lower() not in {"0", "false", "no"},
             enable_calibration_profile=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE", "1").strip().lower() not in {"0", "false", "no"},
             enforce_single_mcp_instance=compat_single_cap,
@@ -231,9 +260,9 @@ class Settings:
             server_owner_key=owner_key,
             server_owner_key_env=owner_key_env,
             server_owner_role=owner_role,
-            env_json_max_chars=max(int(os.environ.get("RL_DEVELOPER_MEMORY_ENV_JSON_MAX_CHARS", "4000")), 256),
-            verification_output_max_chars=max(int(os.environ.get("RL_DEVELOPER_MEMORY_VERIFICATION_OUTPUT_MAX_CHARS", "4000")), 256),
-            note_max_chars=max(int(os.environ.get("RL_DEVELOPER_MEMORY_NOTE_MAX_CHARS", "2000")), 128),
+            env_json_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_ENV_JSON_MAX_CHARS", "4000")), 256), 65536),
+            verification_output_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_VERIFICATION_OUTPUT_MAX_CHARS", "4000")), 256), 65536),
+            note_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_NOTE_MAX_CHARS", "2000")), 128), 65536),
             enable_rl_control=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL", "0").strip().lower() not in {"0", "false", "no"},
             domain_mode=_normalize_domain_mode(os.environ.get("RL_DEVELOPER_MEMORY_DOMAIN_MODE", "generic")),
             enable_theory_audit=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT", "0").strip().lower() not in {"0", "false", "no"},
@@ -245,8 +274,35 @@ class Settings:
             rl_production_min_seed_count=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_PRODUCTION_MIN_SEED_COUNT", "5")), 1),
             rl_max_artifact_refs=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_MAX_ARTIFACT_REFS", "12")), 1),
         )
+        settings._validate_thresholds()
         settings.ensure_dirs()
+        settings._log_config_resolution()
         return settings
+
+    def _log_config_resolution(self) -> None:
+        """Log resolved feature flag values for diagnostics."""
+        flags = {name: getattr(self, name) for name in FLAG_REGISTRY if hasattr(self, name)}
+        _logger.info(
+            "config_resolved db_path=%s domain_mode=%s owner_role=%s flags=%s",
+            self.db_path, self.domain_mode, self.server_owner_role, flags,
+        )
+
+    def _validate_thresholds(self) -> None:
+        """Validate threshold values — raise on critical misconfigurations, warn on others."""
+        if not 0.0 <= self.match_accept_threshold <= 1.0:
+            msg = f"match_accept_threshold={self.match_accept_threshold:.2f} outside [0, 1]"
+            raise ValueError(msg)
+        if not 0.0 <= self.match_weak_threshold <= 1.0:
+            msg = f"match_weak_threshold={self.match_weak_threshold:.2f} outside [0, 1]"
+            raise ValueError(msg)
+        if self.match_weak_threshold > self.match_accept_threshold:
+            _logger.warning(
+                "match_weak_threshold (%.2f) > match_accept_threshold (%.2f)",
+                self.match_weak_threshold, self.match_accept_threshold,
+            )
+        if not 0.0 <= self.ambiguity_margin <= 1.0:
+            msg = f"ambiguity_margin={self.ambiguity_margin:.2f} outside [0, 1]"
+            raise ValueError(msg)
 
     def ensure_dirs(self) -> None:
         """Create directories if they do not exist."""
@@ -293,7 +349,8 @@ def _resolve_owner_key_from_parent_process_lineage(owner_key_env: str) -> tuple[
     precedence intact, this helper is used only after direct env resolution fails.
     """
 
-    for env in _iter_parent_process_environments():
+    extra = frozenset({owner_key_env}) if owner_key_env else None
+    for env in _iter_parent_process_environments(extra_keys=extra):
         owner_key_source = ""
         owner_key = ""
         for env_name in (
@@ -367,7 +424,7 @@ def _synthetic_process_owner_key() -> str:
     return f"synthetic-process-{os.getppid()}-{os.getpid()}"
 
 
-def _iter_parent_process_environments(max_depth: int = 32) -> list[dict[str, str]]:
+def _iter_parent_process_environments(max_depth: int = 32, extra_keys: frozenset[str] | None = None) -> list[dict[str, str]]:
     """Return ancestor process env snapshots when readable on the current platform."""
 
     envs: list[dict[str, str]] = []
@@ -376,7 +433,7 @@ def _iter_parent_process_environments(max_depth: int = 32) -> list[dict[str, str
     depth = 0
     while current_pid > 1 and current_pid not in seen and depth < max_depth:
         seen.add(current_pid)
-        env = _read_process_environment(current_pid)
+        env = _read_process_environment(current_pid, extra_keys=extra_keys)
         if env:
             envs.append(env)
         next_pid = _read_parent_pid(current_pid)
@@ -387,12 +444,32 @@ def _iter_parent_process_environments(max_depth: int = 32) -> list[dict[str, str
     return envs
 
 
-def _read_process_environment(pid: int) -> dict[str, str]:
-    """Read `/proc/<pid>/environ` as a decoded environment map."""
+def _read_process_environment(pid: int, extra_keys: frozenset[str] | None = None) -> dict[str, str]:
+    """Read specific owner-key and Codex env vars from `/proc/<pid>/environ`.
+
+    Only extracts variables needed for owner-key resolution to avoid leaking
+    unrelated secrets from parent processes.
+    """
+
+    _ALLOWED_ENV_KEYS = frozenset({
+        "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY",
+        "RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY",
+        "RL_DEVELOPER_MEMORY_MCP_OWNER_KEY",
+        "CODEX_THREAD_ID",
+    })
+    allowed = _ALLOWED_ENV_KEYS | extra_keys if extra_keys else _ALLOWED_ENV_KEYS
 
     if pid <= 1:
         return {}
-    path = Path("/proc") / str(pid) / "environ"
+    # Only read processes owned by the same UID
+    proc_dir = Path("/proc") / str(pid)
+    try:
+        stat_info = proc_dir.stat()
+    except OSError:
+        return {}
+    if stat_info.st_uid != os.getuid():
+        return {}
+    path = proc_dir / "environ"
     try:
         raw = path.read_bytes()
     except OSError:
@@ -403,7 +480,7 @@ def _read_process_environment(pid: int) -> dict[str, str]:
             continue
         key_bytes, value_bytes = chunk.split(b"=", 1)
         key = key_bytes.decode("utf-8", errors="ignore").strip()
-        if not key:
+        if not key or key not in allowed:
             continue
         env[key] = value_bytes.decode("utf-8", errors="ignore").strip()
     return env

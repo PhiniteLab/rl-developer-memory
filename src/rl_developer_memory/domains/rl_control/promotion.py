@@ -72,12 +72,10 @@ def recommend_validation_tier(
     seed_count = _safe_int(validation.get("seed_count"), default=0)
     baseline_ok = bool(validation.get("baseline_comparison") or validation.get("baseline_results"))
 
-    if validation.get("production_verified") or validation.get("hardware_validated"):
-        if seed_count >= production_min_seed_count and critical_count == 0 and error_count == 0:
-            return "production_validated"
-    if validation.get("theory_reviewed"):
-        if critical_count == 0 and (error_count == 0 or not strict):
-            return "theory_reviewed"
+    if (validation.get("production_verified") or validation.get("hardware_validated")) and seed_count >= production_min_seed_count and critical_count == 0 and error_count == 0:
+        return "production_validated"
+    if validation.get("theory_reviewed") and critical_count == 0 and (error_count == 0 or not strict):
+        return "theory_reviewed"
     if seed_count >= required_seed_count and baseline_ok and critical_count == 0 and (error_count == 0 or not strict):
         return "validated"
     if critical_count == 0 and error_count == 0 and (warning_count <= 2 or not strict):

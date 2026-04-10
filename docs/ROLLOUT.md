@@ -23,14 +23,12 @@ rl-developer-memory-maint metrics --window-days 14
 
 ## Owner-key guidance
 
-Prefer explicit main-conversation key injection with:
-- `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY`
+See [CODEX_MAIN_CONVERSATION_OWNERSHIP.md](CODEX_MAIN_CONVERSATION_OWNERSHIP.md) for the full owner-key model.
 
-Keep these invariants:
-1. one stable owner key per main conversation
-2. subagents should resolve to the same main-conversation key
-3. duplicate exit code `75` means reuse the existing server
-4. do not treat duplicate exit as a generic crash
+Key invariants:
+1. One stable owner key per main conversation
+2. Subagents resolve to the same main-conversation key
+3. Duplicate exit code `75` means reuse, not crash
 
 ## RL/control rollout order
 

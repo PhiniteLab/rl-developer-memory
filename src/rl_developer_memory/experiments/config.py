@@ -261,7 +261,7 @@ class RLExperimentConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "RLExperimentConfig":
+    def from_dict(cls, payload: dict[str, Any]) -> RLExperimentConfig:
         payload = _normalize_legacy_payload(payload)
         if "experiment_name" not in payload:
             raise ValueError("config must define 'experiment_name'")
@@ -288,7 +288,7 @@ class RLExperimentConfig:
         )
 
     @classmethod
-    def load(cls, path: Path | str) -> "RLExperimentConfig":
+    def load(cls, path: Path | str) -> RLExperimentConfig:
         file_path = Path(path)
         suffix = file_path.suffix.lower()
         if suffix == ".json":

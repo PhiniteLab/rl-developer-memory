@@ -1,7 +1,11 @@
+"""Core domain models for query profiles, match results, and match decisions."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import Any
+
+__all__ = ["MatchDecision", "MatchResult", "QueryProfile"]
 
 
 @dataclass(slots=True)
@@ -67,6 +71,7 @@ class MatchResult:
     validation_tier: str = ""
     algorithm_family: str = ""
     runtime_stage: str = ""
+    score_breakdown: dict[str, float] | None = None
 
     def to_compact_dict(self) -> dict[str, Any]:
         payload = {
@@ -101,6 +106,8 @@ class MatchResult:
             payload["algorithm_family"] = self.algorithm_family
         if self.runtime_stage:
             payload["runtime_stage"] = self.runtime_stage
+        if self.score_breakdown:
+            payload["score_breakdown"] = self.score_breakdown
         return payload
 
 

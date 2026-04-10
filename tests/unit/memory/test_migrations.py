@@ -25,8 +25,8 @@ class MigrationTests(unittest.TestCase):
     def test_initialize_applies_v2_foundation(self) -> None:
         self.store.initialize()
         schema = self.store.schema_state()
-        self.assertEqual(schema.current_version, 12)
-        self.assertEqual(schema.applied_count, 11)
+        self.assertEqual(schema.current_version, 13)
+        self.assertEqual(schema.applied_count, 12)
 
         with self.store.managed_connection() as conn:
             tables = {
@@ -83,7 +83,7 @@ class MigrationTests(unittest.TestCase):
         self.assertGreater(int(example["id"]), 0)
 
         upgraded = self.store.migrate()
-        self.assertEqual(upgraded.current_version, 12)
+        self.assertEqual(upgraded.current_version, 13)
 
         bundle = self.store.get_pattern(int(pattern["id"]), include_examples=True)
         self.assertIsNotNone(bundle)
@@ -129,7 +129,7 @@ class MigrationTests(unittest.TestCase):
             )
 
         upgraded = self.store.migrate()
-        self.assertEqual(upgraded.current_version, 12)
+        self.assertEqual(upgraded.current_version, 13)
 
         with self.store.managed_connection() as conn:
             tables = {

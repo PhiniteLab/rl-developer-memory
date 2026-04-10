@@ -34,7 +34,6 @@ from .parser import build_parser, main
 
 __all__ = [
     "build_parser",
-    "main",
     "cmd_backup",
     "cmd_benchmark_dense_bandit",
     "cmd_benchmark_failure_taxonomy",
@@ -63,4 +62,5 @@ __all__ = [
     "cmd_smoke",
     "cmd_smoke_learning",
     "cmd_verify_backup",
+    "main",
 ]

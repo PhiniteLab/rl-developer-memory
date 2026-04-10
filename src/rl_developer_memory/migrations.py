@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import sqlite3
 from dataclasses import asdict, dataclass
@@ -7,6 +8,10 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from importlib import resources
 from typing import Any
+
+_logger = logging.getLogger(__name__)
+
+__all__ = ["MigrationAsset", "MigrationError", "MigrationRunner", "SchemaState", "inspect_schema"]
 
 MIGRATION_NAME_RE = re.compile(r"^(?P<version>\d{3})_(?P<name>[a-z0-9_]+)\.sql$", re.IGNORECASE)
 
@@ -126,18 +131,27 @@ class MigrationRunner:
                     )
                 continue
 
-            conn.executescript(migration.sql)
-            conn.execute(
-                "INSERT INTO schema_migrations(version, name, checksum, applied_at) VALUES (?, ?, ?, ?)",
-                (
-                    migration.version,
-                    migration.name,
-                    migration.checksum,
-                    self._utc_now_iso(),
-                ),
-            )
+            _logger.info("Applying migration %d: %s", migration.version, migration.name)
+            try:
+                conn.executescript(migration.sql)
+                conn.execute(
+                    "INSERT INTO schema_migrations(version, name, checksum, applied_at) VALUES (?, ?, ?, ?)",
+                    (
+                        migration.version,
+                        migration.name,
+                        migration.checksum,
+                        self._utc_now_iso(),
+                    ),
+                )
+            except sqlite3.Error as exc:
+                _logger.error("Migration %d failed: %s", migration.version, exc)
+                raise MigrationError(
+                    f"Failed to apply migration {migration.version} ({migration.name}): {exc}"
+                ) from exc
             executed.append(migration)
 
+        if executed:
+            _logger.info("Applied %d migration(s), now at version %d", len(executed), executed[-1].version)
         return executed
 
     @staticmethod

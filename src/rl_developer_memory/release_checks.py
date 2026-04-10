@@ -1,3 +1,5 @@
+"""Release validation, rollout readiness, and documentation synchronization checks."""
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +14,13 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+__all__ = [
+    "ValidationCommand",
+    "build_validation_commands",
+    "run_validation_matrix",
+    "validate_docs_sync",
+]
 
 from .backup import BackupManager
 from .maintenance import build_parser
@@ -519,23 +528,15 @@ def validate_docs_sync(repo_root: Path) -> dict[str, Any]:
         }
     )
 
-    for command in (*DOC_EXPECTED_CORE_COMMANDS, *DOC_EXPECTED_EXTENDED_COMMANDS):
-        checks.append(
-            {
-                "name": f"docs-command:{command}",
-                "ok": command in combined_docs,
-                "detail": command,
-            }
-        )
+    checks.extend(
+        {"name": f"docs-command:{command}", "ok": command in combined_docs, "detail": command}
+        for command in (*DOC_EXPECTED_CORE_COMMANDS, *DOC_EXPECTED_EXTENDED_COMMANDS)
+    )
 
-    for tool_name in DOC_EXPECTED_MCP_TOOLS:
-        checks.append(
-            {
-                "name": f"docs-tool:{tool_name}",
-                "ok": tool_name in combined_docs,
-                "detail": tool_name,
-            }
-        )
+    checks.extend(
+        {"name": f"docs-tool:{tool_name}", "ok": tool_name in combined_docs, "detail": tool_name}
+        for tool_name in DOC_EXPECTED_MCP_TOOLS
+    )
 
     checks.append(
         {
@@ -544,32 +545,20 @@ def validate_docs_sync(repo_root: Path) -> dict[str, Any]:
             "detail": "docs/README.md should link the rollout validation matrix document.",
         }
     )
-    for doc_name in DOC_EXPECTED_POLICY_DOCS:
-        checks.append(
-            {
-                "name": f"docs-policy-doc:{doc_name}",
-                "ok": doc_name in docs_readme_text and doc_name in readme_text,
-                "detail": doc_name,
-            }
-        )
+    checks.extend(
+        {"name": f"docs-policy-doc:{doc_name}", "ok": doc_name in docs_readme_text and doc_name in readme_text, "detail": doc_name}
+        for doc_name in DOC_EXPECTED_POLICY_DOCS
+    )
 
-    for snippet in DOC_EXPECTED_INSTALL_TOGGLES:
-        checks.append(
-            {
-                "name": f"docs-install-toggle:{snippet}",
-                "ok": snippet in installation_text or snippet in readme_text,
-                "detail": snippet,
-            }
-        )
+    checks.extend(
+        {"name": f"docs-install-toggle:{snippet}", "ok": snippet in installation_text or snippet in readme_text, "detail": snippet}
+        for snippet in DOC_EXPECTED_INSTALL_TOGGLES
+    )
 
-    for snippet in DOC_EXPECTED_REGISTER_FLAGS:
-        checks.append(
-            {
-                "name": f"docs-register-rollout:{snippet}",
-                "ok": snippet in combined_docs,
-                "detail": snippet,
-            }
-        )
+    checks.extend(
+        {"name": f"docs-register-rollout:{snippet}", "ok": snippet in combined_docs, "detail": snippet}
+        for snippet in DOC_EXPECTED_REGISTER_FLAGS
+    )
     checks.append(
         {
             "name": "docs-invalid-resolve-review-example",

@@ -1,5 +1,8 @@
 # Memory scope and write-back operations note
 
+> **Quick-reference summary** of [MCP_RL_INTEGRATION_POLICY.md](MCP_RL_INTEGRATION_POLICY.md) §3–5.
+> See that document for full scope, write-back, and redaction guidance.
+
 This short note is for operators and contributors who use `rl_developer_memory` during RL development.
 
 ## Scope policy

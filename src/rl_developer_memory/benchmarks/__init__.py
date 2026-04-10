@@ -1,3 +1,5 @@
+"""Benchmarking suites for RL backbone validation and calibration."""
+
 from .calibration import run_threshold_calibration
 from .dense_bandit import run_dense_bandit_benchmark, seed_dense_bandit_memory
 from .failure_taxonomy import (
@@ -33,13 +35,13 @@ from .user_domains import (
 )
 
 __all__ = [
+    'MERGE_STRESS_CASES',
     'NEGATIVE_ABSTAIN_CASES',
     'NEGATIVE_HARD_NEGATIVE_CASES',
     'NEGATIVE_REAL_WORLD_CASES',
     'POSITIVE_HARD_NEGATIVE_CASES',
     'POSITIVE_REAL_WORLD_CASES',
     'POSITIVE_TAXONOMY_CASES',
-    'MERGE_STRESS_CASES',
     'RL_CONTROL_REPORTING_CASES',
     'USER_DOMAIN_LABELS',
     'USER_DOMAIN_QUERY_CASES',
@@ -48,8 +50,8 @@ __all__ = [
     'run_failure_taxonomy_benchmark',
     'run_hard_negative_benchmark',
     'run_merge_correctness_stress',
-    'run_rl_control_reporting_benchmark',
     'run_real_world_eval',
+    'run_rl_control_reporting_benchmark',
     'run_runtime_diagnostics',
     'run_threshold_calibration',
     'run_user_domain_benchmark',

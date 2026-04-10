@@ -270,7 +270,7 @@ def run_failure_taxonomy_benchmark(app: Any, *, repeats: int = 1, limit: int = 3
         if not values:
             return {"mean": 0.0, "median": 0.0, "p95": 0.0, "max": 0.0}
         ordered = sorted(values)
-        p95_index = max(min(int(round(0.95 * (len(ordered) - 1))), len(ordered) - 1), 0)
+        p95_index = max(min(round(0.95 * (len(ordered) - 1)), len(ordered) - 1), 0)
         return {
             "mean": round(statistics.mean(values), 3),
             "median": round(statistics.median(values), 3),
@@ -400,7 +400,7 @@ def run_runtime_diagnostics(app: Any, *, repeats: int = 8, limit: int = 3) -> di
             "latency_ms": {
                 "mean": round(statistics.mean(consolidation_latencies), 3),
                 "median": round(statistics.median(consolidation_latencies), 3),
-                "p95": round(sorted(consolidation_latencies)[max(int(round(0.95 * (len(consolidation_latencies) - 1))), 0)], 3),
+                "p95": round(sorted(consolidation_latencies)[max(round(0.95 * (len(consolidation_latencies) - 1)), 0)], 3),
                 "max": round(max(consolidation_latencies), 3),
             },
             "distinct_pattern_ids": len(distinct_pattern_ids),

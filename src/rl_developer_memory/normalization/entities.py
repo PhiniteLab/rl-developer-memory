@@ -252,4 +252,4 @@ def compare_entity_slots(
     }
 
 
-__all__ = ["extract_entity_slots", "compare_entity_slots"]
+__all__ = ["compare_entity_slots", "extract_entity_slots"]

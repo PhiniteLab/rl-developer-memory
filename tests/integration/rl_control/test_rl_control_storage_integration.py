@@ -30,7 +30,7 @@ class RLControlStorageIntegrationTests(unittest.TestCase):
 
     def test_rl_control_schema_columns_exist(self) -> None:
         schema = self.store.schema_state()
-        self.assertEqual(schema.current_version, 12)
+        self.assertEqual(schema.current_version, 13)
 
         with self.store.managed_connection() as conn:
             pattern_columns = {

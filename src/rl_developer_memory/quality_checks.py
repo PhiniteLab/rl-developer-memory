@@ -1,3 +1,5 @@
+"""Quality and structural validation checks for release readiness."""
+
 from __future__ import annotations
 
 import argparse
@@ -8,7 +10,47 @@ import sys
 from pathlib import Path
 from typing import Any
 
+__all__ = [
+    "evaluate_memory_hygiene",
+    "evaluate_repository_structure",
+    "generate_professional_quality_gate_report",
+    "main",
+    "render_human",
+]
+
 from .release_readiness import generate_release_acceptance_report
+
+
+def _validate_python_bin(python_bin: str) -> str:
+    """Validate that python_bin is a safe, existing Python interpreter path.
+
+    Prevents command injection by ensuring the value is a real filesystem path
+    pointing to an existing executable whose basename starts with 'python'.
+    """
+    import shutil
+
+    candidate = python_bin.strip()
+    if not candidate:
+        raise ValueError("python_bin must not be empty")
+    # Reject shell metacharacters that could enable injection
+    _SHELL_META = set(";&|`$(){}[]!#~<>\\\n\r\t\"'")
+    if any(ch in _SHELL_META for ch in candidate):
+        raise ValueError(f"python_bin contains unsafe characters: {candidate!r}")
+    resolved = shutil.which(candidate)
+    if resolved is None:
+        resolved_path = Path(candidate).expanduser().resolve()
+        if not resolved_path.exists():
+            raise ValueError(f"python_bin not found: {candidate!r}")
+        if not resolved_path.is_file():
+            raise ValueError(f"python_bin is not a file: {candidate!r}")
+        if not os.access(resolved_path, os.X_OK):
+            raise ValueError(f"python_bin is not executable: {candidate!r}")
+        resolved = str(resolved_path)
+    basename = Path(resolved).name.lower()
+    if not basename.startswith("python"):
+        raise ValueError(f"python_bin does not look like a Python interpreter: {candidate!r} -> {basename!r}")
+    return resolved
+
 
 REQUIRED_STRUCTURE: dict[str, tuple[str, ...]] = {
     "src_package": (
@@ -197,6 +239,7 @@ def generate_professional_quality_gate_report(
     *,
     python_bin: str,
 ) -> dict[str, Any]:
+    python_bin = _validate_python_bin(python_bin)
     release = generate_release_acceptance_report(repo_root, python_bin=python_bin, include_core=True, include_extended=True)
     matrix = release["validation_matrix"]
     docs_sync = release["docs_sync"]

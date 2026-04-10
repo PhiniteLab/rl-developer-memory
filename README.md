@@ -2,8 +2,6 @@
 
 [![CI](https://github.com/PhiniteLab/rl-developer-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/PhiniteLab/rl-developer-memory/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![GitHub release](https://img.shields.io/github/v/release/PhiniteLab/rl-developer-memory?display_name=tag)](https://github.com/PhiniteLab/rl-developer-memory/releases)
 
 ![Cover diagram showing the project flow: store verified fixes, match recurring failures, and guide RL/control debugging](assets/cover.png)
 
@@ -204,23 +202,24 @@ python scripts/release_readiness.py --json
 
 That report covers install/runtime assumptions, docs-command consistency, reuse behavior, RL reporting checks, and conservative rollout readiness.
 
-## Documentation map
+## Documentation
 
-- [docs/README.md](docs/README.md) — documentation index
-- [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md) — curated release notes for `v0.1.0`
-- [docs/INSTALLATION.md](docs/INSTALLATION.md) — installation and verification details
-- [docs/USAGE.md](docs/USAGE.md) — MCP, CLI, and Python usage patterns
-- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — runtime configuration model
-- [docs/OPERATIONS.md](docs/OPERATIONS.md) — backup, restore, diagnostics, and lifecycle operations
-- [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — dependency policy and install notes
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — runtime and data-flow overview
-- [docs/RL_BACKBONE.md](docs/RL_BACKBONE.md) — RL development backbone layout
-- [docs/THEORY_TO_CODE.md](docs/THEORY_TO_CODE.md) — theorem/assumption/objective mappings to code
-- [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) — coding and delivery standards for RL/control work
-- [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) — scope-selection and write-back hygiene
-- [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) — minimum RL engineering acceptance gate
-- [docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md) — portable global skill sync for `.codex`/`.agents`
-- [examples/README.md](examples/README.md) — runnable example scenarios
+See [docs/README.md](docs/README.md) for the full documentation index covering installation, usage, configuration, architecture, RL backbone, theory mappings, rollout, and validation.
+
+Key entry points:
+
+| Topic | Document |
+| --- | --- |
+| Installation | [docs/INSTALLATION.md](docs/INSTALLATION.md) |
+| Usage patterns | [docs/USAGE.md](docs/USAGE.md) |
+| Configuration | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) |
+| Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Validation matrix | [docs/VALIDATION_MATRIX.md](docs/VALIDATION_MATRIX.md) |
+| RL coding standards | [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) |
+| RL quality gate | [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) |
+| Memory scope notes | [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) |
+| Skill install/sync | [docs/SKILL_INSTALL_SYNC.md](docs/SKILL_INSTALL_SYNC.md) |
+| Release notes | [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md) |
 
 ## Community and project standards
 

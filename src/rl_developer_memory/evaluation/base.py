@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from statistics import mean, pstdev
+from statistics import mean, stdev
 
 from rl_developer_memory.agents.base import BaseAgent
 from rl_developer_memory.envs.base import Environment
@@ -40,7 +40,7 @@ class Evaluator:
             returns.append(total_reward)
         return EvaluationResult(
             return_mean=mean(returns),
-            return_std=pstdev(returns) if len(returns) > 1 else 0.0,
+            return_std=stdev(returns) if len(returns) > 1 else 0.0,
             control_effort=mean(actions) if actions else 0.0,
             crash_rate=0.0,
             constraint_violation_rate=float(violations) / float(len(actions) or 1),

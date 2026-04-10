@@ -1,3 +1,5 @@
+"""Skill bundle synchronization and deployment to Codex plugin directories."""
+
 from __future__ import annotations
 
 import json
@@ -6,6 +8,15 @@ import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable, Mapping
+
+__all__ = [
+    "SurfacePaths",
+    "SyncReport",
+    "ensure_marketplace_entry",
+    "report_as_json",
+    "resolve_surface_paths",
+    "sync_global_skill_surfaces",
+]
 
 PLUGIN_NAME = "rl-developer-memory"
 DEFAULT_CODEX_DIRNAME = ".codex"

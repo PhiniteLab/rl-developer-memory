@@ -48,11 +48,7 @@ class RecordResolutionService:
         payload = coerce_json_value(value, fallback=[])
         if not isinstance(payload, list):
             return []
-        normalized: list[dict[str, Any]] = []
-        for item in payload:
-            if isinstance(item, Mapping):
-                normalized.append(dict(item))
-        return normalized
+        return [dict(item) for item in payload if isinstance(item, Mapping)]
 
     @staticmethod
     def _count_findings_by_severity(findings: Sequence[Mapping[str, Any]]) -> dict[str, int]:

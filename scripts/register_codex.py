@@ -2,12 +2,37 @@
 from __future__ import annotations
 
 import argparse
+import os
+import tempfile
 from pathlib import Path
 
 CONFIG_BEGIN = "# >>> rl-developer-memory >>>"
 CONFIG_END = "# <<< rl-developer-memory <<<"
 AGENTS_BEGIN = "<!-- >>> rl-developer-memory >>> -->"
 AGENTS_END = "<!-- <<< rl-developer-memory <<< -->"  # replaced below
+
+
+def _toml_escape(value: str) -> str:
+    """Escape a string for safe embedding in a TOML double-quoted value."""
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")
+
+
+def _atomic_write_text(path: Path, content: str) -> None:
+    """Write content to path atomically using a temp file + os.replace."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp", prefix=f".{path.name}.")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def replace_block(text: str, begin: str, end: str, new_block: str) -> str:
@@ -60,32 +85,35 @@ RL_DEVELOPER_MEMORY_RL_MAX_ARTIFACT_REFS = "12"
 
     config_block = f"""{CONFIG_BEGIN}
 [mcp_servers.rl_developer_memory]
-command = "{install_root / ".venv" / "bin" / "python"}"
+command = "{_toml_escape(str(install_root / ".venv" / "bin" / "python"))}"
 args = ["-m", "rl_developer_memory.server"]
-cwd = "{install_root}"
+cwd = "{_toml_escape(str(install_root))}"
 startup_timeout_sec = 15
 tool_timeout_sec = 25
 enabled = true
 required = false
 [mcp_servers.rl_developer_memory.env]
-RL_DEVELOPER_MEMORY_HOME = "{data_root}"
-RL_DEVELOPER_MEMORY_DB_PATH = "{data_root / "rl_developer_memory.sqlite3"}"
-RL_DEVELOPER_MEMORY_STATE_DIR = "{state_root}"
-RL_DEVELOPER_MEMORY_BACKUP_DIR = "{data_root / "backups"}"
-RL_DEVELOPER_MEMORY_LOG_DIR = "{state_root / "log"}"
-RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR = "{state_root / "run"}"
+RL_DEVELOPER_MEMORY_HOME = "{_toml_escape(str(data_root))}"
+RL_DEVELOPER_MEMORY_DB_PATH = "{_toml_escape(str(data_root / "rl_developer_memory.sqlite3"))}"
+RL_DEVELOPER_MEMORY_STATE_DIR = "{_toml_escape(str(state_root))}"
+RL_DEVELOPER_MEMORY_BACKUP_DIR = "{_toml_escape(str(data_root / "backups"))}"
+RL_DEVELOPER_MEMORY_LOG_DIR = "{_toml_escape(str(state_root / "log"))}"
+RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR = "{_toml_escape(str(state_root / "run"))}"
 RL_DEVELOPER_MEMORY_SERVER_DUPLICATE_EXIT_CODE = "75"
 RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY = "1"
 RL_DEVELOPER_MEMORY_SERVER_OWNER_KEY_ENV = "RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY"
 RL_DEVELOPER_MEMORY_SERVER_ALLOW_SYNTHETIC_OWNER_KEY = "1"
 RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE = "0"
 RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES = "0"
+RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON = "1"
+RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_IDLE_TIMEOUT_SECONDS = "0"
+RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS = "1.0"
 RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT = "1"
 RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE = "{shadow_mode_flag}"
 RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES = "1"
 RL_DEVELOPER_MEMORY_ENABLE_REDACTION = "1"
 RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE = "1"
-RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH = "{state_root / "calibration_profile.json"}"
+RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH = "{_toml_escape(str(state_root / "calibration_profile.json"))}"
 {rl_env_lines}# Prefer explicit RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY injection per main conversation.
 # Current Codex runtimes may also derive the main-conversation key from CODEX_THREAD_ID session lineage.
 # Optional diagnostics: RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_ROLE=main|subagent
@@ -93,7 +121,7 @@ RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH = "{state_root / "calibration_profi
 {CONFIG_END}
 """
     config_text = replace_block(config_text, CONFIG_BEGIN, CONFIG_END, config_block)
-    config_path.write_text(config_text, encoding="utf-8")
+    _atomic_write_text(config_path, config_text)
 
     agents_path = codex_home / "AGENTS.md"
     agents_path.touch(exist_ok=True)
@@ -131,7 +159,7 @@ RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH = "{state_root / "calibration_profi
 {agents_end}
 """
     agents_text = replace_block(agents_text, agents_begin, agents_end, agents_block)
-    agents_path.write_text(agents_text, encoding="utf-8")
+    _atomic_write_text(agents_path, agents_text)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,10 @@
 # Repo delta: RL MCP workflow contract
 
-This repository treats `rl_developer_memory` as a **local-first MCP memory and audit surface**
-for RL/control development, not as a replacement for normal debugging discipline.
+This file is a **short delta contract**. Detailed guidance lives in `docs/`.
 
-## Live runtime authority
+## Runtime authority
 
-- Treat `~/.codex/config.toml` as the **only live runtime authority**.
+- `~/.codex/config.toml` is the **only live runtime authority**.
 - Repository configs under `configs/` and helper scripts are examples, not live authority.
 
 ## Runtime posture invariants
@@ -13,56 +12,26 @@ for RL/control development, not as a replacement for normal debugging discipline
 - Prefer `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY` for main-conversation ownership.
 - Keep **owner-key required** posture.
 - Treat duplicate exit code **`75`** as a **reuse signal**, not a crash.
-- Keep global max instance cap semantics aligned with **`0`**.
-- Default rollout posture is **shadow**.
-- Keep active DB paths on the local Linux/WSL filesystem; do **not** use `/mnt/c/...`.
-- Preserve redaction hygiene for secrets, tokens, env excerpts, and sensitive local paths.
+- Global max instance cap: **`0`**. Default rollout posture: **shadow**.
+- Active DB must stay on local Linux/WSL filesystem (not `/mnt/c/...`).
+- Redact secrets, tokens, env excerpts, and sensitive paths before durable storage.
 
-## Agent-oriented orchestration guidance
+## MCP flow (short form)
 
-- For the recommended Codex RL work model, see `docs/CODEX_RL_AGENT_OPERATING_MODEL.md`.
-- Keep `AGENTS.md` as a short delta contract; put longer role/orchestration guidance in docs.
+1. `issue_match` → `issue_get` (top 1–2) → `issue_guardrails` as needed
+2. `issue_feedback` after accepted/rejected attempts
+3. `issue_record_resolution` only after verification — redacted, scoped, reusable
 
-Additional operator-facing policy notes:
-- For portable skill install/sync across global `.codex` and `.agents`, see `docs/SKILL_INSTALL_SYNC.md`.
-- `docs/MEMORY_SCOPE_OPERATIONS_NOTE.md` for scope and verified write-back hygiene
-- `docs/RL_CODING_STANDARDS.md` for RL coding and delivery expectations
+Scope: `project_scope` for repo-specific, `global` for cross-repo, `user_scope` for personal preferences.
 
-## RL development MCP flow
+## Detailed guidance (see docs/)
 
-1. **Before coding or triage expansion**
-   - Use `issue_match` with the shortest stable symptom, command, file path, and `project_scope`.
-   - If ambiguous, inspect only the top one or two candidates with `issue_get`.
-   - Use `issue_guardrails` when you need prevention rules, preference overlays, or policy reminders.
-
-2. **During implementation and validation**
-   - Use normal repo-native validation first.
-   - After a meaningful accepted/rejected attempt, use `issue_feedback`.
-   - Use `session_id` to keep in-turn ranking memory local to the active debugging session.
-
-3. **Only after verification**
-   - Write durable fixes with `issue_record_resolution` only for reusable, verified resolutions.
-   - Never store raw secrets, unredacted env dumps, or one-off noisy workarounds.
-
-## Scope contract
-
-- `project_scope`: repo-specific RL workflows, config, import, rollout, theorem/code, checkpoint, benchmark, or validator issues
-- `global`: broad reusable engineering fixes not tied to this repo
-- `user_scope`: user-specific coding style, review preferences, tuning habits, or preference overlays
-
-## Preference and session contract
-
-- Use `issue_set_preference` for stable user/team preferences.
-- Use `issue_list_preferences` to inspect active preference overlays.
-- Use `session_id` on `issue_match` and `issue_feedback` for temporary within-session ranking memory.
-- Do not promote transient session reactions directly into durable pattern memory.
-
-## Write-back rule
-
-Persist a resolution only when all of the following are true:
-- the symptom is real and non-hypothetical
-- the fix is specific and reusable
-- the fix passed relevant validation
-- the stored summary is redacted and compact
-- the chosen scope is explicit and justified
+| Topic | Document |
+| --- | --- |
+| Codex RL orchestration model | [`docs/CODEX_RL_AGENT_OPERATING_MODEL.md`](docs/CODEX_RL_AGENT_OPERATING_MODEL.md) |
+| MCP lifecycle & write-back policy | [`docs/MCP_RL_INTEGRATION_POLICY.md`](docs/MCP_RL_INTEGRATION_POLICY.md) |
+| Scope & write-back quick reference | [`docs/MEMORY_SCOPE_OPERATIONS_NOTE.md`](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) |
+| RL coding & delivery standards | [`docs/RL_CODING_STANDARDS.md`](docs/RL_CODING_STANDARDS.md) |
+| Skill install/sync | [`docs/SKILL_INSTALL_SYNC.md`](docs/SKILL_INSTALL_SYNC.md) |
+| Owner-key model | [`docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md`](docs/CODEX_MAIN_CONVERSATION_OWNERSHIP.md) |
 

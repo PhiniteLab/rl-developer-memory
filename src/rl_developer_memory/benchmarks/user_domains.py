@@ -463,10 +463,7 @@ USER_DOMAIN_QUERY_CASES: list[UserDomainQueryCase] = [
 
 
 def seed_user_domain_memory(app: Any) -> list[dict[str, Any]]:
-    results: list[dict[str, Any]] = []
-    for payload in USER_DOMAIN_SEED_CASES:
-        results.append(app.issue_record_resolution(**payload))
-    return results
+    return [app.issue_record_resolution(**payload) for payload in USER_DOMAIN_SEED_CASES]
 
 
 def run_user_domain_benchmark(app: Any, *, repeats: int = 1, limit: int = 3) -> dict[str, Any]:

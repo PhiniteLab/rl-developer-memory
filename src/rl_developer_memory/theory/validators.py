@@ -22,12 +22,13 @@ def validate_blueprint_registry_alignment(
     *,
     registry: TheoryRegistry,
 ) -> list[RLAuditFinding]:
-    findings: list[RLAuditFinding] = []
     mapping_ids = {item.mapping_id for item in registry.mappings}
     objective_ids = {item.term_id for item in registry.objectives}
-    for mapping_id in blueprint.theorem_mapping_ids:
-        if mapping_id not in mapping_ids:
-            findings.append(_finding("theory", "error", "Blueprint references an unknown theorem mapping.", mapping_id=mapping_id))
+    findings: list[RLAuditFinding] = [
+        _finding("theory", "error", "Blueprint references an unknown theorem mapping.", mapping_id=mapping_id)
+        for mapping_id in blueprint.theorem_mapping_ids
+        if mapping_id not in mapping_ids
+    ]
     for component in blueprint.loss_decomposition:
         if component.component_id not in objective_ids:
             findings.append(_finding("theory", "error", "Blueprint references an unknown loss component.", component_id=component.component_id))
