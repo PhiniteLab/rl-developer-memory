@@ -14,6 +14,10 @@ python scripts/release_readiness.py --json
 python scripts/rl_quality_gate.py --json
 ```
 
+For a fuller first-run proof that combines prompt routing, MCP usage, runtime effects, and negative controls, use:
+
+- [`operations/AUTO_TRIGGER_PROOF_PROTOCOL.md`](operations/AUTO_TRIGGER_PROOF_PROTOCOL.md)
+
 ## What these commands tell you
 
 - `smoke` — the package starts, stores seed data, and returns a valid top match

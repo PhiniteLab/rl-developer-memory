@@ -9,6 +9,7 @@ This directory contains the main documentation set for `rl-developer-memory`.
 - [USAGE.md](USAGE.md) — MCP, CLI, and Python usage patterns
 - [CONFIGURATION.md](CONFIGURATION.md) — runtime configuration model and important environment variables
 - [OPERATIONS.md](OPERATIONS.md) — health, lifecycle, backup, restore, and diagnostics commands
+- [operations/AUTO_TRIGGER_PROOF_PROTOCOL.md](operations/AUTO_TRIGGER_PROOF_PROTOCOL.md) — recommended first-test runbook for proving auto-trigger, MCP, and runtime effects
 - [ROLLOUT.md](ROLLOUT.md) — recommended shadow/active rollout posture
 - [../examples/README.md](../examples/README.md) — runnable RL/control example scenarios
 

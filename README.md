@@ -215,6 +215,7 @@ Key entry points:
 | Configuration | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) |
 | Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Validation matrix | [docs/VALIDATION_MATRIX.md](docs/VALIDATION_MATRIX.md) |
+| First-test proof runbook | [docs/operations/AUTO_TRIGGER_PROOF_PROTOCOL.md](docs/operations/AUTO_TRIGGER_PROOF_PROTOCOL.md) |
 | RL coding standards | [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) |
 | RL quality gate | [docs/RL_QUALITY_GATE.md](docs/RL_QUALITY_GATE.md) |
 | Memory scope notes | [docs/MEMORY_SCOPE_OPERATIONS_NOTE.md](docs/MEMORY_SCOPE_OPERATIONS_NOTE.md) |
