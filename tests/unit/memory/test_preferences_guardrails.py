@@ -7,6 +7,12 @@ from pathlib import Path
 
 from rl_developer_memory.app import RLDeveloperMemoryApp
 from rl_developer_memory.benchmarks import seed_dense_bandit_memory
+from rl_developer_memory.benchmarks.rl_control_reporting import (
+    RL_CONTROL_REPORTING_CASES,
+    seed_rl_control_reporting_memory,
+)
+from rl_developer_memory.domains.rl_control import infer_query_domain_profile
+from rl_developer_memory.normalization import build_query_profile
 
 
 class PreferenceGuardrailTests(unittest.TestCase):
@@ -19,6 +25,8 @@ class PreferenceGuardrailTests(unittest.TestCase):
         "RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL",
         "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT",
         "RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES",
+        "RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL",
+        "RL_DEVELOPER_MEMORY_DOMAIN_MODE",
     )
 
     def setUp(self) -> None:
@@ -33,6 +41,8 @@ class PreferenceGuardrailTests(unittest.TestCase):
         os.environ["RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL"] = "1"
         os.environ["RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT"] = "0"
         os.environ["RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES"] = "1"
+        os.environ["RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL"] = "1"
+        os.environ["RL_DEVELOPER_MEMORY_DOMAIN_MODE"] = "hybrid"
         self.app = RLDeveloperMemoryApp()
         seed_dense_bandit_memory(self.app)
 
@@ -95,6 +105,66 @@ class PreferenceGuardrailTests(unittest.TestCase):
         )
         self.assertTrue(result["preferences"]["preferred_strategies"])
         self.assertEqual(result["preferences"]["preferred_strategies"][0]["strategy_key"], "resolve_from___file__")
+
+    def test_issue_guardrails_reward_config_query_returns_only_rl_aligned_matches_or_empty(self) -> None:
+        query = (
+            "RewardConfigError: reward weights sum to zero and reward budget collapse "
+            "during training"
+        )
+        profile = build_query_profile(query, project_scope="global")
+        domain_profile = infer_query_domain_profile(profile)
+
+        self.assertEqual(profile.error_family, "rl_reward_error")
+        self.assertEqual(profile.root_cause_class, "invalid_reward_configuration")
+        self.assertTrue(domain_profile["enabled"])
+        self.assertEqual(domain_profile["runtime_stage_hint"], "train")
+
+        result = self.app.issue_guardrails(
+            error_text=query,
+            repo_name="safe-control-lab",
+            project_scope="global",
+            limit=5,
+        )
+
+        self.assertEqual(result["query_profile"]["error_family"], "rl_reward_error")
+        self.assertEqual(
+            result["query_profile"]["root_cause_class"],
+            "invalid_reward_configuration",
+        )
+        self.assertEqual(result["guardrails"], [])
+
+    def test_issue_guardrails_retains_top_rl_guardrail_for_valid_experiment_query(self) -> None:
+        seeded = seed_rl_control_reporting_memory(self.app)
+        experiment_case = next(
+            case for case in RL_CONTROL_REPORTING_CASES if case["name"] == "experiment"
+        )
+
+        result = self.app.issue_guardrails(
+            error_text=experiment_case["query"],
+            repo_name="rl-lab",
+            project_scope="rl-lab",
+            limit=5,
+        )
+
+        self.assertTrue(result["guardrails"])
+        matching = [
+            item
+            for item in result["guardrails"]
+            if item["pattern_id"] == seeded["experiment_pattern_id"]
+        ]
+        self.assertTrue(matching)
+        experiment_guardrail = matching[0]
+        self.assertEqual(
+            experiment_guardrail["title"],
+            "Validated SAC quadrotor tracking run pending experiment review",
+        )
+        self.assertEqual(
+            experiment_guardrail["strategy_key"], "add_preflight_validation"
+        )
+        self.assertIn(
+            "reproducibility metadata",
+            experiment_guardrail["prevention_rule"].lower(),
+        )
 
 
 if __name__ == "__main__":

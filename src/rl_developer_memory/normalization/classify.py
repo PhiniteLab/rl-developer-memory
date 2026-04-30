@@ -12,6 +12,40 @@ def classify_from_text(text: str) -> tuple[str, str, list[str], list[str]]:
     family = 'generic_runtime_error'
     root = 'unknown'
 
+    reward_config_signal = _contains_any(
+        text,
+        (
+            'rewardconfigerror',
+            'reward config',
+            'reward configuration',
+            'reward weights',
+            'reward weight',
+            'reward budget',
+            'reward shaping',
+            'reward coefficient',
+            'reward coefficients',
+            'reward scale',
+        ),
+    ) and _contains_any(
+        text,
+        (
+            'reward',
+            'weights',
+            'budget',
+            'collapse',
+            'sum to zero',
+            'all zero',
+            'coefficient',
+            'scale',
+            'shaping',
+        ),
+    )
+    if reward_config_signal:
+        family = 'rl_reward_error'
+        root = 'invalid_reward_configuration'
+        tags.update({'config', 'reward', 'rl'})
+        evidence.append('reward-config-signals')
+
     if _contains_any(text, ('modulenotfounderror', 'importerror', 'cannot import name', 'cannot import', 'cannot be imported', 'failed to import', 'unable to import', 'no module named')):
         family = 'import_error'
         root = 'missing_python_module'

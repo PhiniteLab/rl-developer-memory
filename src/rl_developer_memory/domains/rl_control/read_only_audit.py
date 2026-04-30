@@ -70,7 +70,24 @@ _DYNAMICS_KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 _RUNTIME_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "train": ("train", "training", "optimizer", "backprop", "critic loss", "actor loss", "replay buffer", "seed"),
+    "train": (
+        "train",
+        "training",
+        "optimizer",
+        "backprop",
+        "critic loss",
+        "actor loss",
+        "replay buffer",
+        "seed",
+        "policy improvement",
+        "reward weights",
+        "reward weight",
+        "reward budget",
+        "reward shaping",
+        "reward coefficient",
+        "reward coefficients",
+        "reward scale",
+    ),
     "eval": ("eval", "evaluation", "benchmark", "rollout evaluation"),
     "deployment": ("deployment", "deployed", "runtime", "embedded", "real time", "real-time"),
     "sil": ("sil", "software in loop", "software-in-loop"),
@@ -147,6 +164,37 @@ def _infer_query_sim2real_stage(text: str) -> str:
     return normalize_sim2real_stage(_infer_from_keywords(text, _SIM2REAL_KEYWORDS), default="")
 
 
+def _has_reward_config_signal(text: str) -> bool:
+    return _contains_any(
+        text,
+        (
+            "rewardconfigerror",
+            "reward config",
+            "reward configuration",
+            "reward weights",
+            "reward weight",
+            "reward budget",
+            "reward shaping",
+            "reward coefficient",
+            "reward coefficients",
+            "reward scale",
+        ),
+    ) and _contains_any(
+        text,
+        (
+            "reward",
+            "weights",
+            "budget",
+            "collapse",
+            "sum to zero",
+            "all zero",
+            "coefficient",
+            "scale",
+            "shaping",
+        ),
+    )
+
+
 def _infer_query_memory_kind(
     *,
     text: str,
@@ -155,11 +203,14 @@ def _infer_query_memory_kind(
     runtime_stage: str,
     sim2real_stage: str,
     algorithm_family: str,
+    reward_config_signal: bool = False,
 ) -> str:
     if theorem_claim_type and theorem_claim_type != "none":
         return "theory_pattern"
     if sim2real_stage:
         return "sim2real_pattern"
+    if reward_config_signal:
+        return "experiment_pattern"
     if runtime_stage in {"train", "eval", "sil", "hil", "production"}:
         return "experiment_pattern"
     if runtime_stage == "deployment":
@@ -181,6 +232,9 @@ def infer_query_domain_profile(profile: QueryProfile) -> dict[str, Any]:
     dynamics_class = _infer_query_dynamics_class(text)
     runtime_stage = _infer_query_runtime_stage(text)
     sim2real_stage = _infer_query_sim2real_stage(text)
+    reward_config_signal = _has_reward_config_signal(text)
+    if reward_config_signal and not runtime_stage:
+        runtime_stage = "train"
     memory_kind = normalize_memory_kind(
         _infer_query_memory_kind(
             text=text,
@@ -189,17 +243,21 @@ def infer_query_domain_profile(profile: QueryProfile) -> dict[str, Any]:
             runtime_stage=runtime_stage,
             sim2real_stage=sim2real_stage,
             algorithm_family=algorithm_family,
+            reward_config_signal=reward_config_signal,
         ),
         default="failure_pattern",
     )
     is_rl_control_query = any(
         [
+            profile.error_family in {"rl_reward_error"},
+            profile.root_cause_class in {"invalid_reward_configuration"},
             problem_family not in {"", "generic"},
             bool(theorem_claim_type and theorem_claim_type != "none"),
             bool(algorithm_family),
             bool(runtime_stage),
             bool(sim2real_stage),
             bool(dynamics_class),
+            reward_config_signal,
             _contains_any(text, ("quadrotor", "vtol", "uav", "lyapunov", "bellman", "hjb", "mpc", "actor critic", "control")),
         ]
     )

@@ -3,6 +3,11 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
+from ..domains.rl_control import (
+    build_domain_compatibility,
+    extract_candidate_domain_profile,
+    infer_query_domain_profile,
+)
 from ..matching import IssueMatcher
 from ..normalization import build_query_profile
 from ..storage import RLDeveloperMemoryStore
@@ -21,6 +26,87 @@ class GuardrailService:
         if len(normalized) <= limit:
             return normalized
         return normalized[: limit - 1].rstrip() + "…"
+
+    @staticmethod
+    def _is_rl_candidate(candidate_profile: dict[str, Any]) -> bool:
+        return any(
+            (
+                str(candidate_profile.get("problem_family", "")) not in {"", "generic"},
+                str(candidate_profile.get("theorem_claim_type", "")) not in {"", "none"},
+                bool(str(candidate_profile.get("algorithm_family", ""))),
+                bool(str(candidate_profile.get("runtime_stage", ""))),
+                bool(str(candidate_profile.get("dynamics_class", ""))),
+                bool(str(candidate_profile.get("sim2real_stage", ""))),
+            )
+        )
+
+    @staticmethod
+    def _candidate_text(candidate: dict[str, Any]) -> str:
+        variant = candidate.get("best_variant") or {}
+        parts = (
+            candidate.get("title", ""),
+            candidate.get("domain", ""),
+            candidate.get("tags", ""),
+            candidate.get("context", ""),
+            candidate.get("canonical_fix", ""),
+            candidate.get("prevention_rule", ""),
+            variant.get("title", ""),
+            variant.get("canonical_fix", ""),
+            variant.get("prevention_rule", ""),
+        )
+        return " ".join(str(part or "") for part in parts).lower()
+
+    def _is_applicable_candidate(
+        self,
+        *,
+        profile: Any,
+        candidate: dict[str, Any],
+        query_domain_profile: dict[str, Any],
+    ) -> bool:
+        candidate_family = str(candidate.get("error_family", "")).strip()
+        profile_family = str(getattr(profile, "error_family", "")).strip()
+        if (
+            profile_family
+            and profile_family != "generic_runtime_error"
+            and candidate_family
+            and candidate_family != profile_family
+        ):
+            return False
+
+        if not query_domain_profile.get("enabled"):
+            return True
+
+        candidate_domain_profile = extract_candidate_domain_profile(candidate)
+        candidate_text = self._candidate_text(candidate)
+        textual_alignment = any(
+            str(term).replace("_", " ").strip()
+            and str(term).replace("_", " ").strip() in candidate_text
+            for term in query_domain_profile.get("query_terms", [])
+        )
+        if not self._is_rl_candidate(candidate_domain_profile) and not textual_alignment:
+            return False
+
+        compatibility, _reasons, _findings = build_domain_compatibility(
+            query_domain_profile,
+            candidate_domain_profile,
+        )
+        strong_alignment = any(
+            float(compatibility.get(key, 0.0)) >= 0.45
+            for key in (
+                "problem_family_score",
+                "algorithm_family_score",
+                "theory_score",
+                "runtime_stage_score",
+                "dynamics_score",
+                "sim2real_score",
+            )
+        )
+        negative_penalty = float(
+            compatibility.get("negative_applicability_penalty_score", 0.0)
+        )
+        if negative_penalty >= 0.36 and not strong_alignment and not textual_alignment:
+            return False
+        return True
 
     def plan(
         self,
@@ -46,6 +132,7 @@ class GuardrailService:
             project_scope=normalized_project_scope,
             user_scope=resolved_user_scope,
         )
+        query_domain_profile = infer_query_domain_profile(profile)
         ranked = self.matcher.ranked_candidates(
             profile,
             project_scope=normalized_project_scope,
@@ -75,6 +162,12 @@ class GuardrailService:
         seen_pairs: set[tuple[int, int]] = set()
         for item in ranked:
             candidate = item.candidate
+            if not self._is_applicable_candidate(
+                profile=profile,
+                candidate=candidate,
+                query_domain_profile=query_domain_profile,
+            ):
+                continue
             variant = candidate.get("best_variant") or {}
             pattern_id = int(candidate.get("pattern_id", candidate.get("id", 0)) or 0)
             variant_id = int(candidate.get("variant_id") or variant.get("id") or 0)
