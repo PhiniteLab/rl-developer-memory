@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import sqlite3
 from dataclasses import asdict, dataclass
@@ -10,8 +11,10 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
+from .lifecycle import read_server_lifecycle_status
 from .migrations import inspect_schema
 from .settings import Settings
+from .utils import atomic_write_json
 
 _logger = logging.getLogger(__name__)
 
@@ -72,8 +75,35 @@ class BackupManager:
             manifest_conn.row_factory = sqlite3.Row
             manifest["schema"] = inspect_schema(manifest_conn)
         manifest_path = self._manifest_path(sqlite_path)
-        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        atomic_write_json(manifest_path, manifest)
         return manifest
+
+    def _next_backup_path(self, stamp: str) -> Path:
+        """Atomically reserve a backup path for same-second backup requests."""
+
+        base = self.settings.backup_dir / f"rl_developer_memory_{stamp}.sqlite3"
+        candidates = [base]
+        candidates.extend(self.settings.backup_dir / f"rl_developer_memory_{stamp}_{suffix:04d}.sqlite3" for suffix in range(1, 10_000))
+        for candidate in candidates:
+            if self._manifest_path(candidate).exists():
+                continue
+            try:
+                fd = os.open(candidate, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                continue
+            else:
+                os.close(fd)
+                return candidate
+        raise RuntimeError(f"Unable to allocate unique backup path for stamp {stamp!r}")
+
+    def _cleanup_partial_backup(self, sqlite_path: Path) -> None:
+        manifest_path = self._manifest_path(sqlite_path)
+        for path in (manifest_path, sqlite_path):
+            try:
+                path.unlink(missing_ok=True)
+            except TypeError:
+                if path.exists():
+                    path.unlink()
 
     def create_backup(self) -> BackupResult:
         self.settings.ensure_dirs()
@@ -81,23 +111,27 @@ class BackupManager:
             raise FileNotFoundError(f"Database not found: {self.settings.db_path}")
 
         stamp = utc_stamp()
-        local_path = self.settings.backup_dir / f"rl_developer_memory_{stamp}.sqlite3"
+        local_path = self._next_backup_path(stamp)
         _logger.info("Starting backup from %s", self.settings.db_path)
 
-        src_conn = sqlite3.connect(self.settings.db_path, timeout=30.0)
         try:
-            dst_conn = sqlite3.connect(local_path)
+            src_conn = sqlite3.connect(self.settings.db_path, timeout=30.0)
             try:
-                src_conn.backup(dst_conn)
-                dst_conn.commit()
+                dst_conn = sqlite3.connect(local_path)
+                try:
+                    src_conn.backup(dst_conn)
+                    dst_conn.commit()
+                finally:
+                    dst_conn.close()
             finally:
-                dst_conn.close()
-        finally:
-            src_conn.close()
+                src_conn.close()
 
-        digest = self._hash_file(local_path)
-        created_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-        self._write_manifest(local_path, digest=digest, created_at_utc=created_at_utc)
+            digest = self._hash_file(local_path)
+            created_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            self._write_manifest(local_path, digest=digest, created_at_utc=created_at_utc)
+        except Exception:
+            self._cleanup_partial_backup(local_path)
+            raise
 
         mirror_path: Path | None = None
         if self.settings.windows_backup_target:
@@ -168,6 +202,11 @@ class BackupManager:
 
     def restore_backup(self, backup_path: str | Path, *, create_safety_backup: bool = True) -> dict[str, Any]:
         self.settings.ensure_dirs()
+        if hasattr(self.settings, "state_dir") and hasattr(self.settings, "server_lock_dir"):
+            lifecycle_status = read_server_lifecycle_status(self.settings, refresh_files=False).to_dict()
+            active_count = int(lifecycle_status.get("active_count", 0) or 0)
+            if active_count > 0:
+                raise RuntimeError(f"Refusing to restore while rl-developer-memory MCP server is active. active_count={active_count}")
         sqlite_path = Path(backup_path).expanduser()
         if sqlite_path.suffix.lower() == ".json":
             sqlite_path = sqlite_path.with_suffix(".sqlite3")

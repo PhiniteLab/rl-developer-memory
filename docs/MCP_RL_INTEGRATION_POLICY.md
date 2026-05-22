@@ -16,6 +16,9 @@ truth remains `~/.codex/config.toml`.
 - Default rollout posture: **shadow**
 - Active DB path: local Linux/WSL path only, never `/mnt/c/...`
 - Secret hygiene: no unredacted secrets, tokens, env excerpts, or sensitive local paths in memory
+- Lifecycle status reads: pure-read by default; opt in to status refresh/stale cleanup only when intended
+- Restore posture: never restore over an active MCP lifecycle slot
+- Read-like retrieval side effects: dense cache writes and telemetry writes can be disabled, and strict read-only retrieval mode is available
 
 ---
 
@@ -69,7 +72,23 @@ Use `issue_feedback` after a **meaningful** attempt:
 
 Do **not** call feedback for every trivial thought; call it when a candidate materially affected the next action.
 
-### E. After verification
+### E. Read-only and side-effect-sensitive retrieval
+
+`issue_match` and `issue_search` are read-like tools from the user's perspective, but the default runtime may write:
+
+- retrieval telemetry
+- dense embedding cache rows
+- session cleanup side effects through session-memory reranking
+
+For side-effect-sensitive runs, configure one of:
+
+- `RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES=0`
+- `RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES=0`
+- `RL_DEVELOPER_MEMORY_STRICT_READ_ONLY=1`
+
+Strict read-only retrieval mode disables dense cache writes, telemetry writes, and session-memory reranking on read-like paths. It does not disable explicit write tools such as feedback, resolution recording, preference updates, backup, restore, or migrations.
+
+### F. After verification
 
 Use `issue_record_resolution` only after:
 - the failure is real

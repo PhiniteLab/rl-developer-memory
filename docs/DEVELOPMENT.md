@@ -39,6 +39,19 @@ python scripts/run_rl_backbone_smoke.py
 python scripts/validate_theory_code_sync.py
 ```
 
+## MCP stability checks
+
+When editing migrations, backup/restore, lifecycle status, or read-like retrieval side effects, also run the focused stability checks:
+
+```bash
+python -m pytest tests/unit/memory/test_migrations.py
+python -m pytest tests/unit/test_backup.py tests/unit/test_backup_filename_collision.py
+python -m pytest tests/unit/test_server_issue_health.py tests/integration/operations/test_phase6_server_lifecycle.py
+python -m pytest tests/unit/memory/test_dense_retrieval_bandit.py tests/unit/memory/test_feedback_learning.py
+```
+
+These tests are the focused contract for [`MCP_STABILITY.md`](MCP_STABILITY.md).
+
 ## Repository structure
 
 - `src/rl_developer_memory/` — runtime package
@@ -70,6 +83,7 @@ When touching docs, verify:
 - verify flow still matches `scripts/verify_install.sh`
 - rollout guidance still matches `register_codex.py` and `doctor`
 - RL MCP lifecycle guidance still matches `docs/MCP_RL_INTEGRATION_POLICY.md`
+- MCP stability guidance still matches `docs/MCP_STABILITY.md`
 - rollout validation matrix still matches `.github/workflows/ci.yml` and `scripts/release_readiness.py`
 - Codex agent workflow guidance still matches `docs/CODEX_RL_AGENT_OPERATING_MODEL.md` and repo `AGENTS.md`
 - RL quality gate guidance still matches `docs/RL_QUALITY_GATE.md` and `scripts/rl_quality_gate.py`

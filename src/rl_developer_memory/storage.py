@@ -103,26 +103,28 @@ class RLDeveloperMemoryStore:
         conn = self.connect()
         try:
             if immediate:
-                conn.execute('BEGIN IMMEDIATE;')
-            yield conn
-            conn.commit()
-        except sqlite3.OperationalError as exc:
-            conn.rollback()
-            if "database is locked" not in str(exc):
-                raise
-            # Retry with exponential backoff on SQLITE_BUSY
-            for delay in self._BUSY_RETRY_DELAYS:
-                time.sleep(delay)
-                try:
-                    if immediate:
+                begin_delays = (0.0, *self._BUSY_RETRY_DELAYS)
+                for attempt, delay in enumerate(begin_delays):
+                    if delay:
+                        time.sleep(delay)
+                    try:
                         conn.execute('BEGIN IMMEDIATE;')
-                    yield conn
+                        break
+                    except sqlite3.OperationalError as exc:
+                        if "database is locked" not in str(exc) or attempt == len(begin_delays) - 1:
+                            raise
+            yield conn
+            commit_delays = (0.0, *self._BUSY_RETRY_DELAYS)
+            for attempt, delay in enumerate(commit_delays):
+                if delay:
+                    time.sleep(delay)
+                try:
                     conn.commit()
-                    return
-                except sqlite3.OperationalError:
-                    conn.rollback()
-                    continue
-            raise
+                    break
+                except sqlite3.OperationalError as exc:
+                    if "database is locked" not in str(exc) or attempt == len(commit_delays) - 1:
+                        conn.rollback()
+                        raise
         except Exception:
             conn.rollback()
             raise

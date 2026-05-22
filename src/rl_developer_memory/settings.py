@@ -16,7 +16,10 @@ __all__ = ["FLAG_REGISTRY", "Settings"]
 # ---------------------------------------------------------------------------
 FLAG_REGISTRY: dict[str, str] = {
     "telemetry_enabled": "RL_DEVELOPER_MEMORY_TELEMETRY_ENABLED",
+    "enable_telemetry_writes": "RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES",
     "enable_dense_retrieval": "RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL",
+    "enable_dense_cache_writes": "RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES",
+    "strict_read_only": "RL_DEVELOPER_MEMORY_STRICT_READ_ONLY",
     "enable_strategy_bandit": "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT",
     "enable_strategy_bandit_shadow_mode": "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE",
     "enable_preference_rules": "RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES",
@@ -31,6 +34,40 @@ FLAG_REGISTRY: dict[str, str] = {
     "rl_strict_promotion": "RL_DEVELOPER_MEMORY_RL_STRICT_PROMOTION",
     "rl_review_gated_promotion": "RL_DEVELOPER_MEMORY_RL_REVIEW_GATED_PROMOTION",
 }
+
+
+def _env_int(name: str, default: int, *, minimum: int | None = None, maximum: int | None = None) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        value = default
+    else:
+        try:
+            value = int(raw)
+        except ValueError:
+            _logger.warning("Invalid %s=%r, defaulting to %r", name, raw, default)
+            value = default
+    if minimum is not None:
+        value = max(value, minimum)
+    if maximum is not None:
+        value = min(value, maximum)
+    return value
+
+
+def _env_float(name: str, default: float, *, minimum: float | None = None, maximum: float | None = None) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        value = default
+    else:
+        try:
+            value = float(raw)
+        except ValueError:
+            _logger.warning("Invalid %s=%r, defaulting to %r", name, raw, default)
+            value = default
+    if minimum is not None:
+        value = max(value, minimum)
+    if maximum is not None:
+        value = min(value, maximum)
+    return value
 
 
 @dataclass(frozen=True)
@@ -53,7 +90,10 @@ class Settings:
     ambiguity_margin: float
     session_ttl_seconds: int
     telemetry_enabled: bool
+    enable_telemetry_writes: bool
     enable_dense_retrieval: bool
+    enable_dense_cache_writes: bool
+    strict_read_only: bool
     dense_embedding_dim: int
     dense_candidate_limit: int
     dense_similarity_floor: float
@@ -102,7 +142,7 @@ class Settings:
     @classmethod
     def from_env(cls) -> Settings:
         home = Path(os.environ.get("RL_DEVELOPER_MEMORY_HOME", Path.home() / ".local" / "share" / "rl-developer-memory")).expanduser()
-        db_path = Path(os.environ.get("RL_DEVELOPER_MEMORY_DB_PATH", home / "rl_developer_memory.sqlite3")).expanduser()
+        db_path = Path(os.environ.get("RL_DEVELOPER_MEMORY_DB_PATH", home / "rl_developer_memory.sqlite3")).expanduser().resolve(strict=False)
         _validate_local_linux_db_path(db_path)
         state_dir = Path(os.environ.get("RL_DEVELOPER_MEMORY_STATE_DIR", Path.home() / ".local" / "state" / "rl-developer-memory")).expanduser()
         backup_dir = Path(os.environ.get("RL_DEVELOPER_MEMORY_BACKUP_DIR", home / "backups")).expanduser()
@@ -152,15 +192,16 @@ class Settings:
             os.environ.get("RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON", "0").strip().lower()
             not in {"0", "false", "no"}
         )
-        server_parent_instance_idle_timeout_seconds = max(
-            int(os.environ.get("RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_IDLE_TIMEOUT_SECONDS", "0").strip() or "0"), 0
+        server_parent_instance_idle_timeout_seconds = _env_int(
+            "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_IDLE_TIMEOUT_SECONDS",
+            0,
+            minimum=0,
         )
-        raw_parent_monitor_interval = os.environ.get("RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS", "1.0").strip()
-        try:
-            server_parent_instance_monitor_interval_seconds = max(float(raw_parent_monitor_interval or "1.0"), 0.2)
-        except ValueError:
-            _logger.warning("Invalid PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS=%r, defaulting to 1.0", raw_parent_monitor_interval)
-            server_parent_instance_monitor_interval_seconds = 1.0
+        server_parent_instance_monitor_interval_seconds = _env_float(
+            "RL_DEVELOPER_MEMORY_SERVER_PARENT_INSTANCE_MONITOR_INTERVAL_SECONDS",
+            1.0,
+            minimum=0.2,
+        )
         owner_key = ""
         owner_key_source = ""
         for env_name in (
@@ -211,6 +252,19 @@ class Settings:
         if not owner_role and owner_key_env == "RL_DEVELOPER_MEMORY_SYNTHETIC_OWNER_KEY" and owner_key:
             owner_role = "anonymous"
 
+        strict_read_only = os.environ.get("RL_DEVELOPER_MEMORY_STRICT_READ_ONLY", "0").strip().lower() not in {"0", "false", "no"}
+        enable_dense_cache_writes = (
+            os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES", "1").strip().lower()
+            not in {"0", "false", "no"}
+        )
+        enable_telemetry_writes = (
+            os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES", "1").strip().lower()
+            not in {"0", "false", "no"}
+        )
+        if strict_read_only:
+            enable_dense_cache_writes = False
+            enable_telemetry_writes = False
+
         settings = cls(
             rl_developer_memory_home=home,
             db_path=db_path,
@@ -219,34 +273,37 @@ class Settings:
             backup_dir=backup_dir,
             windows_backup_target=windows_target,
             calibration_profile_path=calibration_profile_path,
-            local_backup_keep=int(os.environ.get("RL_DEVELOPER_MEMORY_LOCAL_BACKUP_KEEP", "30")),
-            mirror_backup_keep=int(os.environ.get("RL_DEVELOPER_MEMORY_MIRROR_BACKUP_KEEP", "15")),
+            local_backup_keep=_env_int("RL_DEVELOPER_MEMORY_LOCAL_BACKUP_KEEP", 30, minimum=1),
+            mirror_backup_keep=_env_int("RL_DEVELOPER_MEMORY_MIRROR_BACKUP_KEEP", 15, minimum=1),
             hostname=socket.gethostname(),
             default_user_scope=os.environ.get("RL_DEVELOPER_MEMORY_DEFAULT_USER_SCOPE", "").strip(),
-            match_accept_threshold=float(os.environ.get("RL_DEVELOPER_MEMORY_MATCH_ACCEPT_THRESHOLD", "0.68")),
-            match_weak_threshold=float(os.environ.get("RL_DEVELOPER_MEMORY_MATCH_WEAK_THRESHOLD", "0.40")),
-            ambiguity_margin=float(os.environ.get("RL_DEVELOPER_MEMORY_AMBIGUITY_MARGIN", "0.09")),
-            session_ttl_seconds=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_SESSION_TTL_SECONDS", "21600")), 60), 604800),
+            match_accept_threshold=_env_float("RL_DEVELOPER_MEMORY_MATCH_ACCEPT_THRESHOLD", 0.68),
+            match_weak_threshold=_env_float("RL_DEVELOPER_MEMORY_MATCH_WEAK_THRESHOLD", 0.40),
+            ambiguity_margin=_env_float("RL_DEVELOPER_MEMORY_AMBIGUITY_MARGIN", 0.09),
+            session_ttl_seconds=_env_int("RL_DEVELOPER_MEMORY_SESSION_TTL_SECONDS", 21600, minimum=60, maximum=604800),
             telemetry_enabled=os.environ.get("RL_DEVELOPER_MEMORY_TELEMETRY_ENABLED", "1").strip().lower() not in {"0", "false", "no"},
+            enable_telemetry_writes=enable_telemetry_writes,
             enable_dense_retrieval=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL", "1").strip().lower() not in {"0", "false", "no"},
-            dense_embedding_dim=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_EMBEDDING_DIM", "192")), 32), 4096),
-            dense_candidate_limit=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_CANDIDATE_LIMIT", "16")), 4), 500),
-            dense_similarity_floor=float(os.environ.get("RL_DEVELOPER_MEMORY_DENSE_SIMILARITY_FLOOR", "0.12")),
+            enable_dense_cache_writes=enable_dense_cache_writes,
+            strict_read_only=strict_read_only,
+            dense_embedding_dim=_env_int("RL_DEVELOPER_MEMORY_DENSE_EMBEDDING_DIM", 192, minimum=32, maximum=4096),
+            dense_candidate_limit=_env_int("RL_DEVELOPER_MEMORY_DENSE_CANDIDATE_LIMIT", 16, minimum=4, maximum=500),
+            dense_similarity_floor=_env_float("RL_DEVELOPER_MEMORY_DENSE_SIMILARITY_FLOOR", 0.12),
             dense_model_name=os.environ.get("RL_DEVELOPER_MEMORY_DENSE_MODEL_NAME", "hash-ngrams-v1").strip() or "hash-ngrams-v1",
             enable_strategy_bandit=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT", "0").strip().lower() not in {"0", "false", "no"},
             enable_strategy_bandit_shadow_mode=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE", "0").strip().lower() not in {"0", "false", "no"},
-            strategy_overlay_scale=float(os.environ.get("RL_DEVELOPER_MEMORY_STRATEGY_OVERLAY_SCALE", "0.20")),
-            variant_overlay_scale=float(os.environ.get("RL_DEVELOPER_MEMORY_VARIANT_OVERLAY_SCALE", "0.08")),
-            safe_override_margin=float(os.environ.get("RL_DEVELOPER_MEMORY_SAFE_OVERRIDE_MARGIN", "0.03")),
-            minimum_strategy_evidence=max(int(os.environ.get("RL_DEVELOPER_MEMORY_MINIMUM_STRATEGY_EVIDENCE", "3")), 1),
-            strategy_half_life_days=max(int(os.environ.get("RL_DEVELOPER_MEMORY_STRATEGY_HALF_LIFE_DAYS", "75")), 1),
-            variant_half_life_days=max(int(os.environ.get("RL_DEVELOPER_MEMORY_VARIANT_HALF_LIFE_DAYS", "35")), 1),
+            strategy_overlay_scale=_env_float("RL_DEVELOPER_MEMORY_STRATEGY_OVERLAY_SCALE", 0.20),
+            variant_overlay_scale=_env_float("RL_DEVELOPER_MEMORY_VARIANT_OVERLAY_SCALE", 0.08),
+            safe_override_margin=_env_float("RL_DEVELOPER_MEMORY_SAFE_OVERRIDE_MARGIN", 0.03),
+            minimum_strategy_evidence=_env_int("RL_DEVELOPER_MEMORY_MINIMUM_STRATEGY_EVIDENCE", 3, minimum=1),
+            strategy_half_life_days=_env_int("RL_DEVELOPER_MEMORY_STRATEGY_HALF_LIFE_DAYS", 75, minimum=1),
+            variant_half_life_days=_env_int("RL_DEVELOPER_MEMORY_VARIANT_HALF_LIFE_DAYS", 35, minimum=1),
             enable_preference_rules=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES", "1").strip().lower() not in {"0", "false", "no"},
-            preference_overlay_scale=float(os.environ.get("RL_DEVELOPER_MEMORY_PREFERENCE_OVERLAY_SCALE", "1.0")),
-            max_preference_adjustment=float(os.environ.get("RL_DEVELOPER_MEMORY_MAX_PREFERENCE_ADJUSTMENT", "0.18")),
-            guardrail_limit=max(int(os.environ.get("RL_DEVELOPER_MEMORY_GUARDRAIL_LIMIT", "5")), 1),
-            telemetry_retention_days=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_TELEMETRY_RETENTION_DAYS", "90")), 1), 3650),
-            resolved_review_retention_days=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_RESOLVED_REVIEW_RETENTION_DAYS", "120")), 1), 3650),
+            preference_overlay_scale=_env_float("RL_DEVELOPER_MEMORY_PREFERENCE_OVERLAY_SCALE", 1.0),
+            max_preference_adjustment=_env_float("RL_DEVELOPER_MEMORY_MAX_PREFERENCE_ADJUSTMENT", 0.18),
+            guardrail_limit=_env_int("RL_DEVELOPER_MEMORY_GUARDRAIL_LIMIT", 5, minimum=1),
+            telemetry_retention_days=_env_int("RL_DEVELOPER_MEMORY_TELEMETRY_RETENTION_DAYS", 90, minimum=1, maximum=3650),
+            resolved_review_retention_days=_env_int("RL_DEVELOPER_MEMORY_RESOLVED_REVIEW_RETENTION_DAYS", 120, minimum=1, maximum=3650),
             enable_redaction=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_REDACTION", "1").strip().lower() not in {"0", "false", "no"},
             enable_calibration_profile=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE", "1").strip().lower() not in {"0", "false", "no"},
             enforce_single_mcp_instance=compat_single_cap,
@@ -260,19 +317,19 @@ class Settings:
             server_owner_key=owner_key,
             server_owner_key_env=owner_key_env,
             server_owner_role=owner_role,
-            env_json_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_ENV_JSON_MAX_CHARS", "4000")), 256), 65536),
-            verification_output_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_VERIFICATION_OUTPUT_MAX_CHARS", "4000")), 256), 65536),
-            note_max_chars=min(max(int(os.environ.get("RL_DEVELOPER_MEMORY_NOTE_MAX_CHARS", "2000")), 128), 65536),
+            env_json_max_chars=_env_int("RL_DEVELOPER_MEMORY_ENV_JSON_MAX_CHARS", 4000, minimum=256, maximum=65536),
+            verification_output_max_chars=_env_int("RL_DEVELOPER_MEMORY_VERIFICATION_OUTPUT_MAX_CHARS", 4000, minimum=256, maximum=65536),
+            note_max_chars=_env_int("RL_DEVELOPER_MEMORY_NOTE_MAX_CHARS", 2000, minimum=128, maximum=65536),
             enable_rl_control=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_RL_CONTROL", "0").strip().lower() not in {"0", "false", "no"},
             domain_mode=_normalize_domain_mode(os.environ.get("RL_DEVELOPER_MEMORY_DOMAIN_MODE", "generic")),
             enable_theory_audit=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_THEORY_AUDIT", "0").strip().lower() not in {"0", "false", "no"},
             enable_experiment_audit=os.environ.get("RL_DEVELOPER_MEMORY_ENABLE_EXPERIMENT_AUDIT", "0").strip().lower() not in {"0", "false", "no"},
             rl_strict_promotion=os.environ.get("RL_DEVELOPER_MEMORY_RL_STRICT_PROMOTION", "1").strip().lower() not in {"0", "false", "no"},
             rl_review_gated_promotion=os.environ.get("RL_DEVELOPER_MEMORY_RL_REVIEW_GATED_PROMOTION", "1").strip().lower() not in {"0", "false", "no"},
-            rl_candidate_warning_budget=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_CANDIDATE_WARNING_BUDGET", "2")), 0),
-            rl_required_seed_count=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_REQUIRED_SEED_COUNT", "3")), 1),
-            rl_production_min_seed_count=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_PRODUCTION_MIN_SEED_COUNT", "5")), 1),
-            rl_max_artifact_refs=max(int(os.environ.get("RL_DEVELOPER_MEMORY_RL_MAX_ARTIFACT_REFS", "12")), 1),
+            rl_candidate_warning_budget=_env_int("RL_DEVELOPER_MEMORY_RL_CANDIDATE_WARNING_BUDGET", 2, minimum=0),
+            rl_required_seed_count=_env_int("RL_DEVELOPER_MEMORY_RL_REQUIRED_SEED_COUNT", 3, minimum=1),
+            rl_production_min_seed_count=_env_int("RL_DEVELOPER_MEMORY_RL_PRODUCTION_MIN_SEED_COUNT", 5, minimum=1),
+            rl_max_artifact_refs=_env_int("RL_DEVELOPER_MEMORY_RL_MAX_ARTIFACT_REFS", 12, minimum=1),
         )
         settings._validate_thresholds()
         settings.ensure_dirs()

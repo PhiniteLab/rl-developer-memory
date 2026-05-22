@@ -54,6 +54,7 @@ The store separates stable reusable knowledge from operational telemetry.
 
 ### Support state
 - schema migrations and FTS structures
+- migration archive manifests for destructive migration audit records
 - reports saved under the state directory
 
 ## Request flow details
@@ -101,3 +102,25 @@ The architecture intentionally exposes operational checks as first-class feature
 - `backup` / `verify-backup` / `restore-backup`
 - `e2e-mcp-reuse-harness`
 - calibration and reporting benchmarks
+
+## Data-safety architecture
+
+The persistence and MCP lifecycle layers are designed to avoid accidental writes in safety-sensitive paths.
+
+### Atomic migrations
+
+Packaged migrations are applied one migration at a time inside an explicit `BEGIN IMMEDIATE` transaction. The migration SQL and the `schema_migrations` marker commit together. On failure, the migration rolls back before the marker is written.
+
+Destructive migration statements are scanned before execution. Ordinary `DROP TABLE` statements require explicit policy allowlisting and create DB-local archive manifest rows before the drop runs.
+
+### Pure-read lifecycle inspection
+
+Lifecycle status reads are pure-read by default. A status read does not rewrite aggregate lifecycle JSON and does not reap stale slots unless the caller explicitly requests refresh behavior.
+
+`issue_health` and restore guard checks use pure-read status inspection.
+
+### Read-like retrieval side effects
+
+Dense retrieval and telemetry are backward-compatible by default, but their writes can be disabled independently. Strict read-only retrieval mode disables dense cache writes, telemetry writes, and session-memory reranking that can trigger cleanup writes.
+
+See [`MCP_STABILITY.md`](MCP_STABILITY.md) for the complete stability and data-safety contract.

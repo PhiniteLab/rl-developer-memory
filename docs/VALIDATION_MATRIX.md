@@ -49,6 +49,30 @@ python scripts/rl_quality_gate.py --json
   - checks docs ↔ CLI ↔ MCP surface sync
   - evaluates automated rollout readiness without treating active rollout as the default
 
+## MCP stability focused checks
+
+Run these focused checks when changing migrations, lifecycle status, backup/restore, or read-like retrieval side effects:
+
+```bash
+python -m pytest tests/unit/memory/test_migrations.py
+python -m pytest tests/unit/test_backup.py tests/unit/test_backup_filename_collision.py
+python -m pytest tests/unit/test_server_issue_health.py tests/integration/operations/test_phase6_server_lifecycle.py
+python -m pytest tests/unit/memory/test_dense_retrieval_bandit.py tests/unit/memory/test_feedback_learning.py
+```
+
+These checks cover:
+
+- migration rollback after partial failure
+- destructive migration archive manifests and unsafe DROP rejection
+- same-line SQL statement execution in the migration runner
+- ignoring harmless `DROP TABLE` text inside SQL string literals
+- concurrent backup filename uniqueness and manifest verification
+- active-server restore refusal
+- pure-read lifecycle status behavior
+- issue health status reads without lifecycle status writes
+- dense cache and telemetry write suppression
+- strict read-only retrieval mode
+
 ## Standard interpretation
 
 ## Minimum RL quality gate checklist

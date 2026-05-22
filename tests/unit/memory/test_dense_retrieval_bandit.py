@@ -17,6 +17,9 @@ class DenseRetrievalBanditTests(unittest.TestCase):
         "RL_DEVELOPER_MEMORY_BACKUP_DIR",
         "RL_DEVELOPER_MEMORY_LOG_DIR",
         "RL_DEVELOPER_MEMORY_ENABLE_DENSE_RETRIEVAL",
+        "RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES",
+        "RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES",
+        "RL_DEVELOPER_MEMORY_STRICT_READ_ONLY",
         "RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT",
     )
 
@@ -63,6 +66,83 @@ class DenseRetrievalBanditTests(unittest.TestCase):
                 "SELECT COUNT(*) AS count FROM embeddings WHERE object_type = 'variant'"
             ).fetchone()["count"]
         self.assertGreater(int(embedding_count), 0)
+
+    def test_dense_retrieval_can_skip_embedding_cache_writes(self) -> None:
+        os.environ["RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES"] = "0"
+        app = RLDeveloperMemoryApp()
+        seed_dense_bandit_memory(app)
+
+        with app.store.managed_connection() as conn:
+            embedding_count_before = conn.execute(
+                "SELECT COUNT(*) AS count FROM embeddings"
+            ).fetchone()["count"]
+
+        result = app.issue_match(
+            error_text=(
+                "active runtime uses an incompatible base checkpoint for the low-rank "
+                "adapter during local llm warm start"
+            ),
+            file_path="llm/lora/load_adapter.py",
+            command="python train_lora.py --resume adapter.ckpt",
+            repo_name="llm-lab",
+            project_scope="global",
+            limit=3,
+        )
+
+        self.assertTrue(result["matches"])
+        self.assertEqual(result["matches"][0]["title"], "LoRA adapter checkpoint rank mismatch")
+        self.assertIn("dense-retrieval", result["matches"][0]["why"])
+
+        with app.store.managed_connection() as conn:
+            embedding_count_after = conn.execute(
+                "SELECT COUNT(*) AS count FROM embeddings"
+            ).fetchone()["count"]
+        self.assertEqual(int(embedding_count_after), int(embedding_count_before))
+
+    def test_strict_read_only_disables_dense_cache_and_telemetry_writes(self) -> None:
+        os.environ["RL_DEVELOPER_MEMORY_STRICT_READ_ONLY"] = "1"
+        app = RLDeveloperMemoryApp()
+        seed_dense_bandit_memory(app)
+
+        with app.store.managed_connection() as conn:
+            embedding_count_before = conn.execute(
+                "SELECT COUNT(*) AS count FROM embeddings"
+            ).fetchone()["count"]
+            retrieval_event_count_before = conn.execute(
+                "SELECT COUNT(*) AS count FROM retrieval_events"
+            ).fetchone()["count"]
+            retrieval_candidate_count_before = conn.execute(
+                "SELECT COUNT(*) AS count FROM retrieval_candidates"
+            ).fetchone()["count"]
+
+        result = app.issue_match(
+            error_text=(
+                "active runtime uses an incompatible base checkpoint for the low-rank "
+                "adapter during local llm warm start"
+            ),
+            file_path="llm/lora/load_adapter.py",
+            command="python train_lora.py --resume adapter.ckpt",
+            repo_name="llm-lab",
+            project_scope="global",
+            limit=3,
+        )
+
+        self.assertTrue(result["matches"])
+        self.assertIsNone(result["retrieval_event_id"])
+
+        with app.store.managed_connection() as conn:
+            embedding_count_after = conn.execute(
+                "SELECT COUNT(*) AS count FROM embeddings"
+            ).fetchone()["count"]
+            retrieval_event_count_after = conn.execute(
+                "SELECT COUNT(*) AS count FROM retrieval_events"
+            ).fetchone()["count"]
+            retrieval_candidate_count_after = conn.execute(
+                "SELECT COUNT(*) AS count FROM retrieval_candidates"
+            ).fetchone()["count"]
+        self.assertEqual(int(embedding_count_after), int(embedding_count_before))
+        self.assertEqual(int(retrieval_event_count_after), int(retrieval_event_count_before))
+        self.assertEqual(int(retrieval_candidate_count_after), int(retrieval_candidate_count_before))
 
     def test_strategy_bandit_promotes_verified_second_candidate(self) -> None:
         first = self.app.issue_match(

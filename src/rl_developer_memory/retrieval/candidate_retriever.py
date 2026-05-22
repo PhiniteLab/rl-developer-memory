@@ -207,7 +207,7 @@ class CandidateRetriever:
                     self._merge_candidate(existing, normalized)
 
         candidates = list(merged.values())
-        if session_id:
+        if session_id and not self.store.settings.strict_read_only:
             self.store.apply_session_penalties(
                 candidates,
                 session_id=session_id,

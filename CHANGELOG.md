@@ -7,7 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Added
+- Documented the MCP stability and data-safety contract, including atomic migrations, destructive migration archive manifests, pure-read lifecycle status, strict read-only retrieval mode, concurrent-safe backups, and active-server restore guards.
+- Added configuration guidance for `RL_DEVELOPER_MEMORY_STRICT_READ_ONLY`, `RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES`, and `RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES`.
+- Added focused validation guidance for migration, backup, lifecycle, and read-like retrieval side-effect checks.
+
+### Changed
+- Clarified backup/restore operations, lifecycle status semantics, and release-readiness interpretation for shadow-first rollout.
 
 ## [0.1.0] - 2026-04-03
 

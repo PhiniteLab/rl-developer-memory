@@ -30,6 +30,23 @@ issue_match(
 )
 ```
 
+### Side-effect-sensitive retrieval
+
+`issue_match` and `issue_search` are read-like from the caller's perspective, but by default they may write retrieval telemetry and dense embedding cache rows. If you need a stricter read-only retrieval pass, configure:
+
+```bash
+export RL_DEVELOPER_MEMORY_STRICT_READ_ONLY=1
+```
+
+or disable the two write classes independently:
+
+```bash
+export RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES=0
+export RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES=0
+```
+
+In strict read-only retrieval mode, `retrieval_event_id` may be absent and session-memory reranking is skipped to avoid hidden cleanup writes.
+
 ### Example: store a verified fix
 
 ```python
@@ -113,6 +130,7 @@ Use compact, stable scopes:
 ## Related references
 
 - [MCP_RL_INTEGRATION_POLICY.md](MCP_RL_INTEGRATION_POLICY.md)
+- [MCP_STABILITY.md](MCP_STABILITY.md)
 - [MEMORY_SCOPE_OPERATIONS_NOTE.md](MEMORY_SCOPE_OPERATIONS_NOTE.md)
 - [RL_CODING_STANDARDS.md](RL_CODING_STANDARDS.md)
 - [SKILL_INSTALL_SYNC.md](SKILL_INSTALL_SYNC.md)

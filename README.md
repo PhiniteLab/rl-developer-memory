@@ -30,6 +30,7 @@ This repository ships three public surfaces:
 - Retrieve ranked prior fixes through MCP tools such as `issue_match`, `issue_get`, and `issue_guardrails`.
 - Run lifecycle, backup, restore, rollout, calibration, and diagnostics commands from one CLI.
 - Operate in generic debugging mode or in RL/control-aware shadow and active rollout modes.
+- Harden MCP stability with atomic migrations, pure-read health/status reads, concurrent-safe backups, active-server restore guards, and optional strict read-only retrieval mode.
 - Keep runtime state local to your Linux or WSL filesystem.
 
 ## Repository layout
@@ -181,6 +182,9 @@ This avoids overwriting the committed sample snapshots under `examples/results/`
 - Prefer `RL_DEVELOPER_MEMORY_MAIN_CONVERSATION_KEY` for main-conversation ownership.
 - Treat duplicate exit code `75` as a reuse signal, not as a generic crash.
 - Default rollout posture should remain **shadow** until you have explicit validation evidence for stronger rollout.
+- For side-effect-sensitive reads, use `RL_DEVELOPER_MEMORY_STRICT_READ_ONLY=1` or disable `RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES` / `RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES` individually.
+- Restore operations refuse to run while an MCP lifecycle slot is active; stop the active MCP server before restore.
+- See [docs/MCP_STABILITY.md](docs/MCP_STABILITY.md) for the full migration, backup, lifecycle, and read-only data-safety contract.
 
 ## Validation and release readiness
 
@@ -214,6 +218,7 @@ Key entry points:
 | Usage patterns | [docs/USAGE.md](docs/USAGE.md) |
 | Configuration | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) |
 | Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| MCP stability and data safety | [docs/MCP_STABILITY.md](docs/MCP_STABILITY.md) |
 | Validation matrix | [docs/VALIDATION_MATRIX.md](docs/VALIDATION_MATRIX.md) |
 | First-test proof runbook | [docs/operations/AUTO_TRIGGER_PROOF_PROTOCOL.md](docs/operations/AUTO_TRIGGER_PROOF_PROTOCOL.md) |
 | RL coding standards | [docs/RL_CODING_STANDARDS.md](docs/RL_CODING_STANDARDS.md) |

@@ -9,7 +9,18 @@ from rl_developer_memory.app import RLDeveloperMemoryApp
 
 
 class FeedbackLearningTests(unittest.TestCase):
+    _ENV_KEYS = (
+        "RL_DEVELOPER_MEMORY_HOME",
+        "RL_DEVELOPER_MEMORY_DB_PATH",
+        "RL_DEVELOPER_MEMORY_STATE_DIR",
+        "RL_DEVELOPER_MEMORY_BACKUP_DIR",
+        "RL_DEVELOPER_MEMORY_LOG_DIR",
+        "RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES",
+        "RL_DEVELOPER_MEMORY_STRICT_READ_ONLY",
+    )
+
     def setUp(self) -> None:
+        self._env_backup = {key: os.environ.get(key) for key in self._ENV_KEYS}
         self.temp_dir = tempfile.TemporaryDirectory(prefix="rl-developer-memory-feedback-")
         base = Path(self.temp_dir.name)
         os.environ["RL_DEVELOPER_MEMORY_HOME"] = str(base / "share")
@@ -21,6 +32,11 @@ class FeedbackLearningTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
+        for key, value in self._env_backup.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
     def test_match_logs_telemetry_and_verified_feedback_updates_variant_and_thompson_stats(self) -> None:
         stored = self.app.issue_record_resolution(
@@ -208,6 +224,47 @@ class FeedbackLearningTests(unittest.TestCase):
         )
         self.assertGreaterEqual(final_match["matches"][0]["score"], score_before)
         self.assertEqual(final_match["decision"]["status"], "match")
+
+    def test_match_can_skip_telemetry_writes(self) -> None:
+        os.environ["RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES"] = "0"
+        app = RLDeveloperMemoryApp()
+        stored = app.issue_record_resolution(
+            title="Relative sqlite path breaks outside repo root",
+            raw_error="FileNotFoundError: references/contractsDatabase.sqlite3",
+            canonical_fix="Resolve the SQLite path relative to __file__.",
+            prevention_rule="No production DB path may depend on cwd.",
+            project_scope="global",
+            canonical_symptom="sqlite database path fails outside repo root",
+            verification_steps="Run from repo root and external cwd.",
+            tags="sqlite,path,cwd",
+            error_family="sqlite_error",
+            root_cause_class="cwd_relative_path_bug",
+            command="python -m app.main",
+            file_path="services/db_loader.py",
+            stack_excerpt='File "services/db_loader.py", line 12, in load_db',
+            domain="python",
+        )
+
+        match = app.issue_match(
+            error_text="FileNotFoundError: references/contractsDatabase.sqlite3 while running python -m app.main from another directory",
+            command="python -m app.main",
+            file_path="services/db_loader.py",
+            project_scope="global",
+            session_id="session-telemetry-off",
+            limit=3,
+        )
+
+        self.assertIsNone(match["retrieval_event_id"])
+        self.assertTrue(match["matches"])
+        self.assertEqual(match["matches"][0].get("variant_id"), stored["variant_id"])
+        self.assertIsNone(match["matches"][0].get("retrieval_candidate_id"))
+
+        with app.store.managed_connection() as conn:
+            retrieval_event_count = conn.execute("SELECT COUNT(*) AS count FROM retrieval_events").fetchone()["count"]
+            retrieval_candidate_count = conn.execute("SELECT COUNT(*) AS count FROM retrieval_candidates").fetchone()["count"]
+
+        self.assertEqual(int(retrieval_event_count), 0)
+        self.assertEqual(int(retrieval_candidate_count), 0)
 
     def test_record_resolution_persists_user_scope_strategy_entities_and_seeded_stats(self) -> None:
         stored = self.app.issue_record_resolution(

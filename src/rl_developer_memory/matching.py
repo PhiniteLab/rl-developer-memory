@@ -110,7 +110,7 @@ class IssueMatcher:
         )
 
         event_meta: dict[str, Any] = {}
-        if log_event and self.settings.telemetry_enabled:
+        if log_event and self.settings.telemetry_enabled and self.settings.enable_telemetry_writes:
             event_meta = self.store.log_retrieval_event(
                 profile=profile,
                 ranked=ranked,
@@ -194,7 +194,7 @@ class IssueMatcher:
         visible_ranked = ranked[:limit]
         matches = [self._to_match_result(item) for item in visible_ranked]
         event_meta: dict[str, Any] = {}
-        if log_event and self.settings.telemetry_enabled:
+        if log_event and self.settings.telemetry_enabled and self.settings.enable_telemetry_writes:
             event_meta = self.store.log_retrieval_event(
                 profile=profile,
                 ranked=ranked,

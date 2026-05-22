@@ -418,7 +418,7 @@ def issue_search(query: str, project_scope: str = "", limit: int = 5, session_id
 def issue_health() -> dict:
     """Return server health: uptime, DB size, pattern count, lifecycle status."""
     settings = get_settings()
-    lifecycle_status = read_server_lifecycle_status(settings)
+    lifecycle_status = read_server_lifecycle_status(settings, refresh_files=False)
     db_bytes = settings.db_path.stat().st_size if settings.db_path.exists() else 0
     uptime_seconds = round(time.monotonic() - _SERVER_START_MONOTONIC, 1)
     app = get_app()

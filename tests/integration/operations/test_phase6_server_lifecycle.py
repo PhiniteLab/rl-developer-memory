@@ -360,7 +360,7 @@ class ServerLifecycleTests(unittest.TestCase):
             proc.wait(timeout=5)
             time.sleep(0.5)
 
-            status = read_server_lifecycle_status(Settings.from_env()).to_dict()
+            status = read_server_lifecycle_status(Settings.from_env(), refresh_files=True).to_dict()
             self.assertFalse(status["running"])
             self.assertEqual(status["active_count"], 0)
 
@@ -369,6 +369,58 @@ class ServerLifecycleTests(unittest.TestCase):
             payload = json.loads(slot_files[0].read_text(encoding="utf-8"))
             self.assertFalse(payload.get("running", False))
             self.assertIn("stale", str(payload.get("shutdown_reason", "")))
+
+    def test_pure_read_status_does_not_write_aggregate_or_cleanup_stale_slot(self) -> None:
+        os.environ["RL_DEVELOPER_MEMORY_ENFORCE_SINGLE_MCP_INSTANCE"] = "0"
+        os.environ["RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES"] = "4"
+        os.environ["RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON"] = "0"
+        os.environ["RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY"] = "0"
+
+        repo_src = str(Path(__file__).resolve().parents[3] / "src")
+        child_code = (
+            "import signal, sys, time\n"
+            "from rl_developer_memory.lifecycle import MCPServerLifecycle\n"
+            "from rl_developer_memory.settings import Settings\n"
+            "l = MCPServerLifecycle(Settings.from_env())\n"
+            "l.start()\n"
+            "print(f'STARTED:{l._slot}', flush=True)\n"
+            "signal.signal(signal.SIGTERM, lambda *args: sys.exit(0))\n"
+            "while True:\n"
+            "    time.sleep(0.2)\n"
+        )
+        env = os.environ.copy()
+        env["PYTHONPATH"] = repo_src + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+
+        proc = subprocess.Popen(
+            [sys.executable, "-c", child_code],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        status_path = Settings.from_env().state_dir / "rl_developer_memory_mcp_status.json"
+        try:
+            started = proc.stdout.readline().strip() if proc.stdout is not None else ""
+            self.assertTrue(started.startswith("STARTED:"), msg=f"unexpected child output: {started}")
+            self.assertTrue(status_path.exists(), "expected aggregate status file to exist after lifecycle start")
+            aggregate_before = json.loads(status_path.read_text(encoding="utf-8"))
+        finally:
+            proc.kill()
+            proc.wait(timeout=5)
+            time.sleep(0.5)
+
+        status = read_server_lifecycle_status(Settings.from_env()).to_dict()
+        self.assertFalse(status["running"])
+        self.assertEqual(status["active_count"], 0)
+
+        aggregate_after = json.loads(status_path.read_text(encoding="utf-8"))
+        self.assertEqual(aggregate_after, aggregate_before)
+
+        slot_files = sorted((Path(os.environ["RL_DEVELOPER_MEMORY_STATE_DIR"]) / "mcp_slots").glob("rl_developer_memory_mcp_slot_*.json"))
+        self.assertTrue(slot_files, "expected slot status file to exist")
+        payload = json.loads(slot_files[0].read_text(encoding="utf-8"))
+        self.assertTrue(payload.get("running", False))
+        self.assertNotIn("stale", str(payload.get("shutdown_reason", "")))
 
     def test_idle_timeout_stops_instance(self) -> None:
         os.environ["RL_DEVELOPER_MEMORY_SERVER_ENFORCE_PARENT_SINGLETON"] = "0"

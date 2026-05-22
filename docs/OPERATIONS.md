@@ -60,6 +60,37 @@ Recommended live posture:
 - use backup verification before risky restore actions
 - treat mirrored targets as copy destinations, not the active database path
 - monitor backup freshness with `doctor`
+- same-second and concurrent backup requests reserve unique SQLite paths atomically
+- backup manifests are written atomically and paired with the reserved SQLite path
+
+Backup names keep a readable timestamp and add suffixes only when needed:
+
+```text
+rl_developer_memory_<stamp>.sqlite3
+rl_developer_memory_<stamp>_0001.sqlite3
+```
+
+If backup or manifest writing fails, partial local backup artifacts are cleaned up.
+
+## Restore safety
+
+Restore operations are intentionally conservative:
+
+- `restore-backup` verifies the manifest before restoring
+- a safety backup is created by default when the active DB exists
+- restore refuses to run while lifecycle status reports an active MCP server slot
+- lifecycle status is read in pure-read mode during the guard check
+
+Recommended restore runbook:
+
+```bash
+rl-developer-memory-maint server-status
+rl-developer-memory-maint verify-backup /path/to/backup.sqlite3
+rl-developer-memory-maint restore-backup /path/to/backup.sqlite3
+rl-developer-memory-maint smoke
+```
+
+If `restore-backup` reports an active MCP server, stop the active MCP session/process first. Do not restore over a live MCP process.
 
 ## Metrics and reports
 
@@ -101,6 +132,8 @@ Primary runtime locations:
 - log dir: `RL_DEVELOPER_MEMORY_LOG_DIR`
 - backup dir: `RL_DEVELOPER_MEMORY_BACKUP_DIR`
 - calibration profile: `RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH`
+
+`server-status` can be used as a pure inspection command. Programmatic lifecycle reads are pure-read by default; callers that intentionally want stale-slot cleanup and aggregate status refresh must opt in with `refresh_files=True`.
 
 ## Cron-based backups
 

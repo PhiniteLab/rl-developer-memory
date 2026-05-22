@@ -20,6 +20,28 @@ class DenseEmbeddingIndex:
         self.dim = max(int(store.settings.dense_embedding_dim), 32)
         self.similarity_floor = float(store.settings.dense_similarity_floor)
 
+    @property
+    def cache_writes_enabled(self) -> bool:
+        return bool(self.store.settings.enable_dense_cache_writes)
+
+    def _upsert_embedding(
+        self,
+        *,
+        object_type: str,
+        object_id: int,
+        vector: list[float],
+    ) -> None:
+        if not self.cache_writes_enabled:
+            return
+        self.store.upsert_embedding(
+            object_type=object_type,
+            object_id=object_id,
+            embedding_model=self.model_name,
+            vector_dim=self.dim,
+            vector_blob=self.pack_vector(vector),
+            norm=1.0,
+        )
+
     @staticmethod
     def _hash_bytes(value: str) -> bytes:
         return blake2b(value.encode("utf-8", errors="ignore"), digest_size=8).digest()
@@ -145,28 +167,14 @@ class DenseEmbeddingIndex:
         if row is None:
             return
         vector = self.embed_text(self._compose_pattern_text(row))
-        self.store.upsert_embedding(
-            object_type="pattern",
-            object_id=pattern_id,
-            embedding_model=self.model_name,
-            vector_dim=self.dim,
-            vector_blob=self.pack_vector(vector),
-            norm=1.0,
-        )
+        self._upsert_embedding(object_type="pattern", object_id=pattern_id, vector=vector)
 
     def refresh_variant(self, variant_id: int) -> None:
         row = self.store.get_variant_embedding_source(variant_id)
         if row is None:
             return
         vector = self.embed_text(self._compose_variant_text(row))
-        self.store.upsert_embedding(
-            object_type="variant",
-            object_id=variant_id,
-            embedding_model=self.model_name,
-            vector_dim=self.dim,
-            vector_blob=self.pack_vector(vector),
-            norm=1.0,
-        )
+        self._upsert_embedding(object_type="variant", object_id=variant_id, vector=vector)
 
     def _ensure_variant_embeddings(self, rows: list[dict[str, Any]]) -> dict[int, list[float]]:
         if not rows:
@@ -183,14 +191,7 @@ class DenseEmbeddingIndex:
             existing = stored.get(variant_id)
             if existing is None:
                 vector = self.embed_text(self._compose_variant_text(row))
-                self.store.upsert_embedding(
-                    object_type="variant",
-                    object_id=variant_id,
-                    embedding_model=self.model_name,
-                    vector_dim=self.dim,
-                    vector_blob=self.pack_vector(vector),
-                    norm=1.0,
-                )
+                self._upsert_embedding(object_type="variant", object_id=variant_id, vector=vector)
                 vectors[variant_id] = vector
             else:
                 vectors[variant_id] = self.unpack_vector(existing["vector_blob"], expected_dim=self.dim)
@@ -211,14 +212,7 @@ class DenseEmbeddingIndex:
             existing = stored.get(pattern_id)
             if existing is None:
                 vector = self.embed_text(self._compose_pattern_text(row))
-                self.store.upsert_embedding(
-                    object_type="pattern",
-                    object_id=pattern_id,
-                    embedding_model=self.model_name,
-                    vector_dim=self.dim,
-                    vector_blob=self.pack_vector(vector),
-                    norm=1.0,
-                )
+                self._upsert_embedding(object_type="pattern", object_id=pattern_id, vector=vector)
                 vectors[pattern_id] = vector
             else:
                 vectors[pattern_id] = self.unpack_vector(existing["vector_blob"], expected_dim=self.dim)

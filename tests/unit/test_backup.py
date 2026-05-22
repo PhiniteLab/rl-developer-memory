@@ -5,14 +5,19 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
+import rl_developer_memory.backup as backup_module
 from rl_developer_memory.backup import BackupManager, BackupResult, utc_stamp
+from rl_developer_memory.lifecycle import MCPServerLifecycle
+from rl_developer_memory.settings import Settings
+from rl_developer_memory.storage import RLDeveloperMemoryStore
 
 
 @pytest.fixture()
-def backup_env(tmp_path: Path):
+def backup_env(tmp_path: Path) -> Any:
     """Create a minimal Settings-like environment with a real SQLite database."""
     db_path = tmp_path / "data" / "test.sqlite3"
     db_path.parent.mkdir(parents=True)
@@ -37,7 +42,7 @@ def backup_env(tmp_path: Path):
         def ensure_dirs(self) -> None:
             self.backup_dir.mkdir(parents=True, exist_ok=True)
 
-    return FakeSettings()
+    return cast(Any, FakeSettings())
 
 
 class TestUtcStamp:
@@ -82,6 +87,18 @@ class TestCreateBackup:
         manager = BackupManager(backup_env)
         with pytest.raises(FileNotFoundError):
             manager.create_backup()
+
+    def test_same_second_backups_do_not_overwrite(self, backup_env, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(backup_module, "utc_stamp", lambda: "20260522_190751")
+        manager = BackupManager(backup_env)
+
+        first = manager.create_backup()
+        second = manager.create_backup()
+
+        assert first.local_path != second.local_path
+        assert Path(first.local_path).exists()
+        assert Path(second.local_path).exists()
+        assert len(list(backup_env.backup_dir.glob("rl_developer_memory_20260522_190751*.sqlite3"))) == 2
 
 
 class TestListBackups:
@@ -150,6 +167,58 @@ class TestRestoreBackup:
             f.write(b"tampered")
         with pytest.raises(ValueError, match="verification failed"):
             manager.restore_backup(result.local_path)
+
+    def test_restore_refuses_when_server_lifecycle_active(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_HOME", str(tmp_path / "share"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_DB_PATH", str(tmp_path / "share" / "memory.sqlite3"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_STATE_DIR", str(tmp_path / "state"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_BACKUP_DIR", str(tmp_path / "share" / "backups"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_LOG_DIR", str(tmp_path / "state" / "log"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_SERVER_LOCK_DIR", str(tmp_path / "state" / "run"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_CALIBRATION_PROFILE_PATH", str(tmp_path / "state" / "calibration.json"))
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_MAX_MCP_INSTANCES", "1")
+        monkeypatch.setenv("RL_DEVELOPER_MEMORY_SERVER_REQUIRE_OWNER_KEY", "0")
+
+        settings = Settings.from_env()
+        RLDeveloperMemoryStore(settings).initialize()
+        manager = BackupManager(settings)
+        result = manager.create_backup()
+        lifecycle = MCPServerLifecycle(settings, register_atexit=False)
+        try:
+            lifecycle.start()
+            with pytest.raises(RuntimeError, match="MCP server is active"):
+                manager.restore_backup(result.local_path, create_safety_backup=False)
+        finally:
+            lifecycle.release()
+
+    def test_restore_guard_uses_pure_read_lifecycle_status(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        class FakeSettings:
+            def __init__(self) -> None:
+                self.db_path = tmp_path / "share" / "memory.sqlite3"
+                self.backup_dir = tmp_path / "share" / "backups"
+                self.state_dir = tmp_path / "state"
+                self.server_lock_dir = tmp_path / "state" / "run"
+
+            def ensure_dirs(self) -> None:
+                self.backup_dir.mkdir(parents=True, exist_ok=True)
+
+        class FakeStatus:
+            def to_dict(self) -> dict[str, int]:
+                return {"active_count": 1}
+
+        calls: list[bool] = []
+
+        def fake_read_server_lifecycle_status(_settings, *, refresh_files: bool = False):
+            calls.append(refresh_files)
+            return FakeStatus()
+
+        monkeypatch.setattr(backup_module, "read_server_lifecycle_status", fake_read_server_lifecycle_status)
+
+        manager = BackupManager(cast(Any, FakeSettings()))
+        with pytest.raises(RuntimeError, match="MCP server is active"):
+            manager.restore_backup(tmp_path / "unused.sqlite3", create_safety_backup=False)
+
+        assert calls == [False]
 
 
 class TestPrune:

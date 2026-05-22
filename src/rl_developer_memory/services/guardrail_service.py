@@ -104,9 +104,11 @@ class GuardrailService:
         negative_penalty = float(
             compatibility.get("negative_applicability_penalty_score", 0.0)
         )
-        if negative_penalty >= 0.36 and not strong_alignment and not textual_alignment:
-            return False
-        return True
+        return not (
+            negative_penalty >= 0.36
+            and not strong_alignment
+            and not textual_alignment
+        )
 
     def plan(
         self,

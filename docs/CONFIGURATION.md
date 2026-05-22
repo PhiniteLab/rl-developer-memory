@@ -42,11 +42,34 @@ Synthetic fallback does not replace the preferred posture. `RL_DEVELOPER_MEMORY_
 - `RL_DEVELOPER_MEMORY_MATCH_ACCEPT_THRESHOLD`
 - `RL_DEVELOPER_MEMORY_MATCH_WEAK_THRESHOLD`
 - `RL_DEVELOPER_MEMORY_AMBIGUITY_MARGIN`
+- `RL_DEVELOPER_MEMORY_STRICT_READ_ONLY`
+- `RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES`
+- `RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES`
 - `RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT`
 - `RL_DEVELOPER_MEMORY_ENABLE_STRATEGY_BANDIT_SHADOW_MODE`
 - `RL_DEVELOPER_MEMORY_ENABLE_PREFERENCE_RULES`
 - `RL_DEVELOPER_MEMORY_ENABLE_REDACTION`
 - `RL_DEVELOPER_MEMORY_ENABLE_CALIBRATION_PROFILE`
+
+### Read-like retrieval side effects
+
+By default, retrieval remains backward compatible:
+
+- dense retrieval may cache missing embeddings in SQLite
+- `issue_match` and `issue_search` may write retrieval telemetry
+- session memory may influence candidate reranking
+
+For side-effect-sensitive diagnostics or read-only analysis, use:
+
+| Env var | Default | Behavior |
+| --- | --- | --- |
+| `RL_DEVELOPER_MEMORY_ENABLE_DENSE_CACHE_WRITES` | `1` | Set to `0` to compute dense vectors without inserting/updating embedding cache rows. |
+| `RL_DEVELOPER_MEMORY_ENABLE_TELEMETRY_WRITES` | `1` | Set to `0` to prevent retrieval telemetry writes from match/search calls. |
+| `RL_DEVELOPER_MEMORY_STRICT_READ_ONLY` | `0` | Set to `1` to force dense cache writes and telemetry writes off and skip session-memory reranking that can trigger cleanup writes. |
+
+`RL_DEVELOPER_MEMORY_STRICT_READ_ONLY=1` applies to read-like retrieval paths. It does not convert explicit write tools such as feedback, resolution recording, preference updates, backup, restore, or migration commands into read-only operations.
+
+For the full data-safety contract, see [`MCP_STABILITY.md`](MCP_STABILITY.md).
 
 ## RL/control extension settings
 

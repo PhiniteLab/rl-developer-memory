@@ -450,8 +450,9 @@ class MCPServerLifecycle:
                 latest_key = candidate_key
         return latest
 
-    def _collect_active_slots(self) -> list[dict[str, Any]]:
-        self._reap_stale_slots()
+    def _collect_active_slots(self, *, reap_stale: bool = True) -> list[dict[str, Any]]:
+        if reap_stale:
+            self._reap_stale_slots()
         active: list[dict[str, Any]] = []
         for slot in self._iter_known_slots():
             payload = self._read_slot_payload(slot)
@@ -665,7 +666,7 @@ class MCPServerLifecycle:
         self._initialized = False
 
 
-def read_server_lifecycle_status(settings: Settings) -> ServerLifecycleStatus:
+def read_server_lifecycle_status(settings: Settings, *, refresh_files: bool = False) -> ServerLifecycleStatus:
     lifecycle = MCPServerLifecycle(settings, register_atexit=False)
     payload: dict[str, Any] = {}
     if lifecycle.status_path.exists():
@@ -673,7 +674,7 @@ def read_server_lifecycle_status(settings: Settings) -> ServerLifecycleStatus:
             payload = json.loads(lifecycle.status_path.read_text(encoding="utf-8"))
         except (OSError, ValueError, json.JSONDecodeError):
             payload = {}
-    active_slots = lifecycle._collect_active_slots()
+    active_slots = lifecycle._collect_active_slots(reap_stale=refresh_files)
     active_count = len(active_slots)
     primary = active_slots[0] if active_slots else None
     latest = lifecycle._latest_slot_payload()
@@ -711,10 +712,11 @@ def read_server_lifecycle_status(settings: Settings) -> ServerLifecycleStatus:
         parent_singleton_enforced=bool(settings.server_enforce_parent_singleton),
         idle_timeout_seconds=int(settings.server_parent_instance_idle_timeout_seconds),
     )
-    try:
-        lifecycle._write_aggregate_status(note="status-read")
-    except OSError:
-        pass
+    if refresh_files:
+        try:
+            lifecycle._write_aggregate_status(note="status-read")
+        except OSError:
+            pass
     return status
 
 
